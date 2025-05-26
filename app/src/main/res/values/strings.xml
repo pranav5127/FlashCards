@@ -1,0 +1,17 @@
+<resources>
+    <string name="app_name">FlashCards</string>
+    <string name="back">Back</string>
+    <string name="flash_cards">Flash Cards</string>
+    <string name="home">Home</string>
+    <string name="library">Library</string>
+    <string name="settings">Settings\n</string>
+    <string name="profile">user</string>
+    <string name="card">Card</string>
+    <string name="card_screen">Card Screen</string>
+    <string name="next">Next</string>
+    <string name="prev">Previous</string>
+    <string name="next_card">Next Card</string>
+    <string name="previous_card">Previous Card</string>
+    <string name="exam_screen">Exam Screen\n</string>
+    <string name="upload_pdf">Upload Pdf</string>
+</resources>
