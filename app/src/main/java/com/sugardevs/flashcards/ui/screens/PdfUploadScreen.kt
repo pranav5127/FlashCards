@@ -19,18 +19,18 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.sugardevs.flashcards.R
 import com.sugardevs.flashcards.ui.components.BottomBar
 import com.sugardevs.flashcards.ui.components.TopBar
 import com.sugardevs.flashcards.ui.theme.FlashCardsTheme
+import com.sugardevs.flashcards.ui.viewModels.PdfUploadScreenViewModel
 
 @Composable
 fun PdfUploadScreen(
     onUploadPdfButtonClick: () -> Unit = {},
-    topicValue: String = "",
-    onTopicChange: (String) -> Unit = {}
+    pdfUploadScreenViewModel: PdfUploadScreenViewModel = viewModel()
 ) {
-
     Scaffold(
         topBar = {
             TopBar(
@@ -71,8 +71,8 @@ fun PdfUploadScreen(
                 verticalArrangement = Arrangement.Bottom
             ) {
                 TextField(
-                    value = topicValue,
-                    onValueChange = { onTopicChange(it) },
+                    value = pdfUploadScreenViewModel.text,
+                    onValueChange = pdfUploadScreenViewModel::onTextChange ,
                 )
             }
         }
