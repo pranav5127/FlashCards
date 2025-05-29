@@ -3,6 +3,9 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.kotlin.serialization)
+    id("com.google.devtools.ksp")
+    id("com.google.dagger.hilt.android")
+
 }
 
 android {
@@ -65,14 +68,24 @@ dependencies {
     // Additional Icons
     implementation(libs.androidx.material.icons.extended)
 
-    // viewModel
+    // ViewModel
     implementation(libs.androidx.lifecycle.viewmodel.compose)
 
-    // navigation
+    // Navigation
     implementation(libs.androidx.navigation.compose)
 
     // JSON serialization
     implementation(libs.kotlinx.serialization.json)
+    implementation(libs.retrofit2.kotlinx.serialization.converter)
+
+    // Retrofit
+    implementation(libs.retrofit)
+    implementation(libs.converter.gson)
+    implementation(libs.okhttp)
+
+    // Dependency injection hilt
+    implementation(libs.hilt.android)
+    ksp(libs.hilt.android.compiler)
 
 
 }

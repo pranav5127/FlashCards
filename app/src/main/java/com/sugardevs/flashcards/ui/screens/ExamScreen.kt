@@ -47,6 +47,7 @@ fun ExamScreenPreviewDark() {
 @Composable
 fun ExamScreenWithScaffoldPreview() {
     FlashCardsTheme {
+
         Scaffold(
             topBar = { TopAppBar(title = { Text("Exam Screen Preview") }) },
         ) { paddingValues ->
