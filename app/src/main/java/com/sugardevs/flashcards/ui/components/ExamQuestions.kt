@@ -1,8 +1,26 @@
 package com.sugardevs.flashcards.ui.components
 
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.*
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -25,113 +43,94 @@ fun ExamQuestions(
     onPreviousClick: () -> Unit = {},
     onSubmitClick: () -> Unit = {}
 ) {
-    Scaffold(
-        topBar = {
-            TopBar(
-                title = "Exam",
-                onBackClick = { /*TODO*/ },
-                onProfileClick = { /*TODO*/ }
-            )
-        },
-        bottomBar = {
-            BottomBar()
-        }
-    ) { paddingValues ->
-        Column(
-            modifier = modifier
-                .padding(paddingValues)
-                .fillMaxSize()
-                .padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(
+            text = "Question $questionNumber of $totalQuestions",
+            fontSize = 18.sp,
+            fontWeight = FontWeight.Medium,
+            color = MaterialTheme.colorScheme.primary
+        )
+
+        Text(
+            text = "Question $questionNumber",
+            fontSize = 26.sp,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier
+                .padding(top = 8.dp, bottom = 16.dp)
+                .align(Alignment.CenterHorizontally)
+        )
+
+        Text(
+            text = questionText,
+            fontSize = 20.sp,
+            fontWeight = FontWeight.Normal,
+            textAlign = TextAlign.Center,
+            modifier = Modifier
+                .padding(horizontal = 12.dp, vertical = 8.dp)
+                .fillMaxWidth()
+        )
+
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 16.dp),
+            shape = RoundedCornerShape(16.dp),
+            elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
         ) {
-            // Question Counter
-            Text(
-                text = "Question $questionNumber of $totalQuestions",
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Medium,
-                color = MaterialTheme.colorScheme.primary
-            )
-
-            // Question Title
-            Text(
-                text = "Question $questionNumber",
-                fontSize = 26.sp,
-                fontWeight = FontWeight.Bold,
+            Column(
                 modifier = Modifier
-                    .padding(top = 8.dp, bottom = 16.dp)
-                    .align(Alignment.CenterHorizontally)
-            )
-
-            // Question Text
-            Text(
-                text = questionText,
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Normal,
-                textAlign = TextAlign.Center,
-                modifier = Modifier
-                    .padding(horizontal = 12.dp, vertical = 8.dp)
-                    .fillMaxWidth()
-            )
-
-            // Options
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 16.dp),
-                shape = RoundedCornerShape(16.dp),
-                elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+                    .padding(24.dp)
+                    .fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                Column(
-                    modifier = Modifier
-                        .padding(24.dp)
-                        .fillMaxWidth(),
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    OptionItem("Paris")
-                    OptionItem("London")
-                    OptionItem("Berlin")
-                    OptionItem("Madrid")
-                }
+                OptionItem("Paris")
+                OptionItem("London")
+                OptionItem("Berlin")
+                OptionItem("Madrid")
+            }
+        }
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 32.dp),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            IconButton(
+                onClick = onPreviousClick,
+                enabled = questionNumber > 1
+            ) {
+                Icon(
+                    painter = painterResource(R.drawable.outline_arrow_circle_left_24),
+                    contentDescription = "Previous",
+                    modifier = Modifier.size(64.dp)
+                )
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
-
-            // Icon Buttons Row
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 32.dp),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                IconButton(
-                    onClick = onPreviousClick,
-                    enabled = questionNumber > 1
-                ) {
+            if (questionNumber < totalQuestions) {
+                IconButton(onClick = onNextClick) {
                     Icon(
-                        painter = painterResource(R.drawable.outline_arrow_circle_left_24),
-                        contentDescription = "Previous",
+                        painter = painterResource(R.drawable.outline_arrow_circle_right_24),
+                        contentDescription = "Next",
                         modifier = Modifier.size(64.dp)
                     )
                 }
-
-                if (questionNumber < totalQuestions) {
-                    IconButton(onClick = onNextClick) {
-                        Icon(
-                            painter = painterResource(R.drawable.outline_arrow_circle_right_24),
-                            contentDescription = "Next",
-                            modifier = Modifier.size(64.dp)
-                        )
-                    }
-                } else {
-                    IconButton(onClick = onSubmitClick) {
-                        Icon(
-                            painter = painterResource(R.drawable.baseline_check_circle_outline_24),
-                            contentDescription = "Submit",
-                            modifier = Modifier.size(64.dp),
-                            tint = MaterialTheme.colorScheme.primary
-                        )
-                    }
+            } else {
+                IconButton(onClick = onSubmitClick) {
+                    Icon(
+                        painter = painterResource(R.drawable.baseline_check_circle_outline_24),
+                        contentDescription = "Submit",
+                        modifier = Modifier.size(64.dp),
+                        tint = MaterialTheme.colorScheme.primary
+                    )
                 }
             }
         }
@@ -171,5 +170,20 @@ fun ExamQuestionPreviewLight() {
 fun ExamQuestionPreviewDark() {
     FlashCardsTheme(darkTheme = true) {
         ExamQuestions()
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Preview(showBackground = true, name = "Exam Questions With Scaffold Preview")
+@Composable
+fun ExamQuestionsWithScaffoldPreview() {
+    FlashCardsTheme {
+        Scaffold(
+            topBar = { TopAppBar(title = { Text("Exam Questions Preview") }) },
+        ) { paddingValues ->
+            Box(Modifier.padding(paddingValues)) {
+                ExamQuestions()
+            }
+        }
     }
 }

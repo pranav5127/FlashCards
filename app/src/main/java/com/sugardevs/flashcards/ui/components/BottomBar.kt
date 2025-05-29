@@ -20,7 +20,11 @@ import com.sugardevs.flashcards.R
 
 @Composable
 fun BottomBar(
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onHomeClick: () -> Unit = {},
+    onFlashCardsClick: () -> Unit = {},
+    onUploadPdfClick: () -> Unit = {},
+    onExamClick: () -> Unit = {}
 ) {
     BottomAppBar(
         modifier = modifier
@@ -32,26 +36,34 @@ fun BottomBar(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceEvenly
             ) {
-                IconButton(onClick = { /* do something */ }) {
+                IconButton(
+                    onClick = onHomeClick
+                ) {
                     Icon(
                         Icons.Filled.Home,
                         contentDescription = stringResource(R.string.home)
                     )
                 }
-                IconButton(onClick = { /* do something */ }) {
+                IconButton(
+                    onClick = onFlashCardsClick
+                ) {
                     Icon(
                         Icons.Filled.AutoAwesomeMotion,
                         contentDescription = stringResource(R.string.flash_cards)
                     )
                 }
-                IconButton(onClick = { /* do something */ }) {
+                IconButton(
+                    onClick = onUploadPdfClick
+                ) {
                     Icon(
                         Icons.Filled.PictureAsPdf,
                         contentDescription = stringResource(R.string.upload_pdf)
                     )
                 }
 
-                    IconButton(onClick = { /* do something */ }) {
+                IconButton(
+                    onClick = onExamClick
+                ) {
                     Icon(
                         Icons.Filled.LocalLibrary,
                         contentDescription = stringResource(R.string.library)

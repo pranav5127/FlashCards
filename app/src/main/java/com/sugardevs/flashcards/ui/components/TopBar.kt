@@ -19,7 +19,8 @@ import com.sugardevs.flashcards.R
 fun TopBar(
     modifier: Modifier = Modifier,
     title: String = stringResource(R.string.app_name),
-    onBackClick: () -> Unit,
+    showBackButton: Boolean = true,
+    onBackClick: () -> Unit = {},
     onProfileClick: () -> Unit
 ) {
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
@@ -28,13 +29,17 @@ fun TopBar(
             Text(text = title)
         },
         modifier = modifier,
-        navigationIcon = {
-            IconButton(onClick = onBackClick) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                    contentDescription = stringResource(R.string.back)
-                )
+        navigationIcon = if (showBackButton) {
+            {
+                IconButton(onClick = onBackClick) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = stringResource(R.string.back)
+                    )
+                }
             }
+        } else {
+            {}
         },
         actions = {
             IconButton(onClick = onProfileClick) {
