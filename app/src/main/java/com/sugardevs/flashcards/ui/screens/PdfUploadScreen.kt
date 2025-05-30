@@ -1,20 +1,8 @@
 package com.sugardevs.flashcards.ui.screens
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TopAppBar
-import androidx.compose.runtime.Composable
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -26,12 +14,16 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.sugardevs.flashcards.R
 import com.sugardevs.flashcards.ui.theme.FlashCardsTheme
 import com.sugardevs.flashcards.ui.viewModels.PdfUploadScreenViewModel
+import com.sugardevs.flashcards.ui.viewModels.UploadUiState
+import androidx.hilt.navigation.compose.hiltViewModel
 
 @Composable
 fun PdfUploadScreen(
     onUploadPdfButtonClick: () -> Unit = {},
-    pdfUploadScreenViewModel: PdfUploadScreenViewModel = viewModel()
+    pdfUploadScreenViewModel: PdfUploadScreenViewModel = hiltViewModel()
 ) {
+    val uiState = pdfUploadScreenViewModel.uiState
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -44,30 +36,65 @@ fun PdfUploadScreen(
             color = Color.Gray,
             modifier = Modifier.padding(8.dp)
         )
-        IconButton(
-            onClick = { onUploadPdfButtonClick() }
-        ) {
+
+        // PDF Upload Button
+        IconButton(onClick = onUploadPdfButtonClick) {
             Icon(
                 painter = painterResource(R.drawable.baseline_add_circle_outline_24),
                 contentDescription = stringResource(R.string.upload_pdf),
-                modifier = Modifier
-                    .height(64.dp)
-                    .width(64.dp)
+                modifier = Modifier.size(64.dp)
             )
         }
-        Column(
-            modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.Bottom
+
+        // Text Input + Send Button
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 24.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
             TextField(
                 value = pdfUploadScreenViewModel.text,
                 onValueChange = pdfUploadScreenViewModel::onTextChange,
+                modifier = Modifier.weight(1f),
+                label = { Text("Enter topic") }
             )
+
+            Spacer(modifier = Modifier.width(8.dp))
+
+            Button(
+                onClick = {
+                    pdfUploadScreenViewModel.uploadTopic(pdfUploadScreenViewModel.text)
+                }
+            ) {
+                Text("Send")
+            }
+        }
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        // Handle UI State
+        when (uiState) {
+            is UploadUiState.Loading -> CircularProgressIndicator()
+
+            is UploadUiState.Success -> {
+                Text("Topic: ${uiState.response.topic}", style = MaterialTheme.typography.titleMedium)
+                uiState.response.points.forEach { point ->
+                    Text("• $point")
+                }
+            }
+
+            is UploadUiState.Error -> {
+                Text("Error: ${uiState.message}", color = Color.Red)
+            }
+
+            UploadUiState.Idle -> {} // No UI
         }
     }
 }
 
-@Preview(showBackground = true)
+
+@Preview(showBackground = true, name = "Light Mode Preview")
 @Composable
 fun PdfUploadScreenPreview() {
     FlashCardsTheme {
@@ -75,24 +102,27 @@ fun PdfUploadScreenPreview() {
     }
 }
 
-
-@Preview(showBackground = true)
+@Preview(showBackground = true, name = "Dark Mode Preview")
 @Composable
-fun PdfUploadScreenPreviewDarkMode() {
+fun PdfUploadScreenPreviewDark() {
     FlashCardsTheme(darkTheme = true) {
         PdfUploadScreen()
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
-@Preview(showBackground = true, name = "PDF Upload Screen With Scaffold Preview")
+@Preview(showBackground = true, name = "Scaffold Layout Preview")
 @Composable
 fun PdfUploadScreenWithScaffoldPreview() {
     FlashCardsTheme {
         Scaffold(
-            topBar = { TopAppBar(title = { Text("Upload PDF Preview") }) },
-        ) { paddingValues ->
-            Box(Modifier.padding(paddingValues)) {
+            topBar = {
+                TopAppBar(
+                    title = { Text("Upload PDF") }
+                )
+            }
+        ) { innerPadding ->
+            Box(Modifier.padding(innerPadding)) {
                 PdfUploadScreen()
             }
         }
