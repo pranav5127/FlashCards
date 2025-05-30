@@ -1,4 +1,4 @@
-package com.sugardevs.flashcards.data.model
+package com.sugardevs.flashcards.ui.model
 
 data class HomeUiState(
     val userName: String = "User",

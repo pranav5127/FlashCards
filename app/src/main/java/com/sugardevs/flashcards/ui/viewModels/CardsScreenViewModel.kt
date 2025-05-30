@@ -2,7 +2,7 @@ package com.sugardevs.flashcards.ui.viewModels
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.sugardevs.flashcards.data.model.CardsUiState
+import com.sugardevs.flashcards.ui.model.CardsUiState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow

@@ -1,13 +1,10 @@
 package com.sugardevs.flashcards.ui.viewModels
 
-import android.os.Message
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.sugardevs.flashcards.data.model.CardsUiState
 import com.sugardevs.flashcards.data.network.model.CardsRequest
 import com.sugardevs.flashcards.data.network.model.CardsResponse
 import com.sugardevs.flashcards.data.network.repository.CardsRepository
@@ -56,7 +53,18 @@ class PdfUploadScreenViewModel @Inject constructor(
     }
 
     fun onPdfUploadButtonPress(pdfFile: File) {
-        /*TODO*/
+        viewModelScope.launch {
+            uiState = UploadUiState.Loading
+            uiState = try {
+                val result = repository.uploadPdfFile(pdfFile)
+                if (result.isSuccessful && result.body() != null) {
+                    UploadUiState.Success(result.body()!!)
+                } else {
+                    UploadUiState.Error("Error: ${result.errorBody()?.string() ?: "Unknown error"}")
+                }
+            } catch (e: Exception) {
+                UploadUiState.Error("Exception: ${e.localizedMessage ?: "Unknown error"}")
+            }
+        }
     }
-
 }
