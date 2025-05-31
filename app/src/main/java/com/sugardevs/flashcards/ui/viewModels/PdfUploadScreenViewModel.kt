@@ -6,23 +6,17 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sugardevs.flashcards.data.network.model.CardsRequest
-import com.sugardevs.flashcards.data.network.model.CardsResponse
-import com.sugardevs.flashcards.data.network.repository.CardsRepository
+import com.sugardevs.flashcards.data.network.repository.CardsNetworkRepository
+import com.sugardevs.flashcards.utils.UploadUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import java.io.File
 import javax.inject.Inject
 
-sealed class UploadUiState {
-    object Idle : UploadUiState()
-    object Loading : UploadUiState()
-    data class Success(val response: CardsResponse) : UploadUiState()
-    data class Error(val message: String) : UploadUiState()
-}
 
 @HiltViewModel
 class PdfUploadScreenViewModel @Inject constructor(
-    private val repository: CardsRepository
+    private val repository: CardsNetworkRepository
 ) : ViewModel() {
 
     var uiState by mutableStateOf<UploadUiState>(UploadUiState.Idle)

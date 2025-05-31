@@ -28,6 +28,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -39,21 +40,26 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.sugardevs.flashcards.R
 import com.sugardevs.flashcards.ui.components.FlashCard
 import com.sugardevs.flashcards.ui.theme.FlashCardsTheme
 import com.sugardevs.flashcards.ui.viewModels.CardsScreenViewModel
-
-@OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun CardScreen(
-    cardsScreenViewModel: CardsScreenViewModel = viewModel()
+    topicId: String,
+    modifier: Modifier = Modifier,
+    cardsScreenViewModel: CardsScreenViewModel = hiltViewModel()
 ) {
     val uiState by cardsScreenViewModel.cardsUiState.collectAsState()
 
+    LaunchedEffect(topicId) {
+        cardsScreenViewModel.loadCards(topicId)
+    }
+
     Box(
-        modifier = Modifier.fillMaxSize(),
+        modifier = modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
     ) {
         when {
@@ -166,37 +172,6 @@ fun CardScreen(
                         }
                     }
                 }
-            }
-        }
-    }
-}
-
-@Preview(showBackground = true, name = "Card Screen Light")
-@Composable
-fun CardScreenPreview() {
-    FlashCardsTheme {
-        CardScreen()
-    }
-}
-
-@Preview(showBackground = true, name = "Card Screen Dark")
-@Composable
-fun CardScreenPreviewDarkTheme() {
-    FlashCardsTheme(darkTheme = true) {
-        CardScreen()
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Preview(showBackground = true, name = "Card Screen With Scaffold Preview")
-@Composable
-fun CardScreenWithScaffoldPreview() {
-    FlashCardsTheme {
-        Scaffold(
-            topBar = { TopAppBar(title = { Text("Card Screen Preview") }) },
-        ) { paddingValues ->
-            Box(Modifier.padding(paddingValues)) {
-                CardScreen()
             }
         }
     }

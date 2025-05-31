@@ -10,7 +10,7 @@ import retrofit2.Response
 import java.io.File
 import javax.inject.Inject
 
-class CardsRepository @Inject constructor(
+class CardsNetworkRepository @Inject constructor(
     private val apiService: ApiService
 ) {
     suspend fun fetchCards(request: CardsRequest): Response<CardsResponse> {

@@ -2,7 +2,7 @@ package com.sugardevs.flashcards.data.network.di
 
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import com.sugardevs.flashcards.data.network.api.ApiService
-import com.sugardevs.flashcards.data.network.repository.CardsRepository
+import com.sugardevs.flashcards.data.network.repository.CardsNetworkRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -39,6 +39,6 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideCardRepository(apiService: ApiService): CardsRepository =
-        CardsRepository(apiService)
+    fun provideCardRepository(apiService: ApiService): CardsNetworkRepository =
+        CardsNetworkRepository(apiService)
 }

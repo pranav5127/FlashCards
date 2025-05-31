@@ -1,11 +1,8 @@
 package com.sugardevs.flashcards.ui.model
 
-import java.util.Collections
-
 data class CardsUiState(
-    val id: String = "",
     val isLoading: Boolean = true,
-    val cards: List<String> = Collections.emptyList(),
+    val cards: List<String> = emptyList(),
     val currentCardIndex: Int = 0,
     val error: String? = null
 )

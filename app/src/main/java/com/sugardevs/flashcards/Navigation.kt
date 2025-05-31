@@ -16,6 +16,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.toRoute
 import com.sugardevs.flashcards.ui.components.BottomBar
 import com.sugardevs.flashcards.ui.components.ExamQuestions
 import com.sugardevs.flashcards.ui.components.TopBar
@@ -29,7 +30,7 @@ import kotlinx.serialization.Serializable
 object Home
 
 @Serializable
-object Cards
+data class Cards(val topicId: String = "1")
 
 @Serializable
 object Exam
@@ -71,9 +72,10 @@ fun MainAppNavigation() {
             }
         },
         bottomBar = {
-            val isTopLevel = currentDestination?.route == Home.javaClass.name ||
-                    currentDestination?.route == Cards.javaClass.name ||
+            val isTopLevel = currentDestination?.route?.startsWith("Cards") == true ||
+                    currentDestination?.route == Home.javaClass.name ||
                     currentDestination?.route == PdfUpload.javaClass.name
+
 
             if (isTopLevel) {
                 BottomBar(
@@ -85,7 +87,7 @@ fun MainAppNavigation() {
                         }
                     },
                     onFlashCardsClick = {
-                        navController.navigate(Cards) {
+                        navController.navigate(Cards()) {
                             popUpTo(navController.graph.startDestinationId) { saveState = true }
                             launchSingleTop = true
                             restoreState = true
@@ -151,8 +153,10 @@ fun AppNavHost(navController: NavHostController, modifier: Modifier = Modifier) 
         composable<Home> {
             HomeScreen()
         }
-        composable<Cards> {
-            CardScreen()
+        composable<Cards> { backStackEntry ->
+            val args = backStackEntry.toRoute<Cards>()
+            CardScreen(topicId = args.topicId)
+
         }
         composable<Exam> {
             ExamScreen()
