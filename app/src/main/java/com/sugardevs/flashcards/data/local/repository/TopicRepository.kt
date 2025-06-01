@@ -10,6 +10,8 @@ class TopicRepository @Inject constructor(private val dao: TopicDao) {
 
     suspend fun getTopicById(topicId: String): TopicEntity? = dao.getTopicById(topicId)
 
+    suspend fun getAllCardsNewestFirst() = dao.getAllCardsNewestFirst()
+
     suspend fun insertTopic(topic: TopicEntity) = dao.insertTopic(topic)
 
     suspend fun ensureTopicExists(topicId: String,topicName: String): TopicEntity {

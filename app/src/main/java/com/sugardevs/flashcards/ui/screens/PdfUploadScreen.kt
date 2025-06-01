@@ -45,7 +45,7 @@ fun PdfUploadScreen(
 ) {
     val context = LocalContext.current
     val uiState = pdfUploadScreenViewModel.uiState
-    val navigateToTopic = pdfUploadScreenViewModel.navigateToTopic
+    val navigateToTopic = pdfUploadScreenViewModel.navigateToTopicId
 
     val pdfPickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocument(),

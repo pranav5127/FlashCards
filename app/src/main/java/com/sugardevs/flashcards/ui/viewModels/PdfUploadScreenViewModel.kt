@@ -7,6 +7,7 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sugardevs.flashcards.data.local.repository.CardsDbRepository
+import com.sugardevs.flashcards.data.local.repository.TopicRepository
 import com.sugardevs.flashcards.data.network.model.CardsRequest
 import com.sugardevs.flashcards.data.network.repository.CardsNetworkRepository
 import com.sugardevs.flashcards.utils.UploadUiState
@@ -17,8 +18,9 @@ import javax.inject.Inject
 
 @HiltViewModel
 class PdfUploadScreenViewModel @Inject constructor(
-    private val repository: CardsNetworkRepository,
-    private val dbRepository: CardsDbRepository
+    private val networkRepository: CardsNetworkRepository,
+    private val cardsDbRepository: CardsDbRepository,
+    private val topicRepository: TopicRepository
 ) : ViewModel() {
 
     var uiState by mutableStateOf<UploadUiState>(UploadUiState.Idle)
@@ -26,40 +28,56 @@ class PdfUploadScreenViewModel @Inject constructor(
     var text by mutableStateOf("")
         private set
 
-    var navigateToTopic by mutableStateOf<String?>(null)
+
+    var navigateToTopicId by mutableStateOf<String?>(null)
         private set
 
     fun onTextChange(newText: String) {
         text = newText
     }
 
-
-    fun uploadTopic(topic: String) {
-        if (topic.isBlank()) {
-            uiState = UploadUiState.Error("Topic cannot be empty.")
+    fun uploadTopic(topicNameFromInput: String) {
+        val trimmedTopicName = topicNameFromInput.trim()
+        if (trimmedTopicName.isBlank()) {
+            uiState = UploadUiState.Error("Topic name cannot be empty.")
             return
         }
 
         viewModelScope.launch {
             uiState = UploadUiState.Loading
             try {
-                Log.d("PdfUploadViewModel", "Uploading topic: $topic")
-                val result = repository.fetchCards(CardsRequest(topic = topic))
+                Log.d("PdfUploadViewModel", "Fetching cards for topic: $trimmedTopicName")
+                val result = networkRepository.fetchCards(CardsRequest(topic = trimmedTopicName))
+
                 if (result.isSuccessful && result.body() != null) {
                     val response = result.body()!!
+                    val topicIdAndNameFromServer = response.topic.trim()
 
-                    dbRepository.saveCards(response.topic, response.points)
-                    uiState = UploadUiState.Success(response)
-                    navigateToTopic = response.topic
-                    text = "" // Clear input after success
-                } else {
-                    uiState = UploadUiState.Error(
-                        "Error: ${
-                            result.errorBody()?.string() ?: "Unknown error"
-                        }"
+                    if (topicIdAndNameFromServer.isBlank()) {
+                        Log.e("PdfUploadViewModel", "Received blank topic name/ID from server for input: $trimmedTopicName")
+                        uiState = UploadUiState.Error("Received empty topic from server.")
+                        return@launch
+                    }
+
+                    topicRepository.ensureTopicExists(
+                        topicId = topicIdAndNameFromServer,
+                        topicName = topicIdAndNameFromServer
                     )
+                    Log.d("PdfUploadViewModel", "Ensured topic exists: ID/Name='$topicIdAndNameFromServer'")
+
+                    cardsDbRepository.saveCards(topicIdAndNameFromServer, response.points)
+                    Log.d("PdfUploadViewModel", "Saved ${response.points.size} cards for topic: $topicIdAndNameFromServer")
+
+                    uiState = UploadUiState.Success(response)
+                    navigateToTopicId = topicIdAndNameFromServer
+                    text = ""
+                } else {
+                    val errorBody = result.errorBody()?.string() ?: "Unknown error"
+                    Log.e("PdfUploadViewModel", "Error fetching cards for topic '$trimmedTopicName': ${result.code()} - $errorBody")
+                    uiState = UploadUiState.Error("Error: $errorBody")
                 }
             } catch (e: Exception) {
+                Log.e("PdfUploadViewModel", "Exception in uploadTopic for '$trimmedTopicName'", e)
                 uiState = UploadUiState.Error("Exception: ${e.localizedMessage ?: "Unknown error"}")
             }
         }
@@ -70,28 +88,43 @@ class PdfUploadScreenViewModel @Inject constructor(
             uiState = UploadUiState.Loading
             try {
                 Log.d("PdfUploadViewModel", "Uploading PDF: ${pdfFile.name}")
-                val result = repository.uploadPdfFile(pdfFile)
+                val result = networkRepository.uploadPdfFile(pdfFile)
+
                 if (result.isSuccessful && result.body() != null) {
                     val response = result.body()!!
+                    val topicIdAndNameFromServer = response.topic.trim()
 
-                    dbRepository.saveCards(response.topic, response.points)
-                    uiState = UploadUiState.Success(response)
-                    navigateToTopic = response.topic
-                } else {
-                    uiState = UploadUiState.Error(
-                        "Error: ${
-                            result.errorBody()?.string() ?: "Unknown error"
-                        }"
+                    if (topicIdAndNameFromServer.isBlank()) {
+                        Log.e("PdfUploadViewModel", "Received blank topic name/ID from PDF response for file: ${pdfFile.name}")
+                        uiState = UploadUiState.Error("Received empty topic from PDF processing.")
+                        return@launch
+                    }
+
+                    topicRepository.ensureTopicExists(
+                        topicId = topicIdAndNameFromServer,
+                        topicName = topicIdAndNameFromServer
                     )
+                    Log.d("PdfUploadViewModel", "Ensured topic exists: ID/Name='$topicIdAndNameFromServer'")
+
+                    cardsDbRepository.saveCards(topicIdAndNameFromServer, response.points)
+                    Log.d("PdfUploadViewModel", "Saved ${response.points.size} cards for topic: $topicIdAndNameFromServer from PDF")
+
+                    uiState = UploadUiState.Success(response)
+                    navigateToTopicId = topicIdAndNameFromServer
+                } else {
+                    val errorBody = result.errorBody()?.string() ?: "Unknown error"
+                    Log.e("PdfUploadViewModel", "Error uploading PDF '${pdfFile.name}': ${result.code()} - $errorBody")
+                    uiState = UploadUiState.Error("Error: $errorBody")
                 }
             } catch (e: Exception) {
+                Log.e("PdfUploadViewModel", "Exception in onPdfUploadButtonPress for '${pdfFile.name}'", e)
                 uiState = UploadUiState.Error("Exception: ${e.localizedMessage ?: "Unknown error"}")
             }
         }
     }
 
     fun onNavigated() {
-        navigateToTopic = null
+        navigateToTopicId = null
         uiState = UploadUiState.Idle
     }
 }
