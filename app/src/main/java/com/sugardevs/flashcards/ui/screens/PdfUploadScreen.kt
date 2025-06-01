@@ -5,7 +5,6 @@ import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -17,39 +16,37 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavHostController
+import com.sugardevs.flashcards.Cards
 import com.sugardevs.flashcards.R
-import com.sugardevs.flashcards.ui.theme.FlashCardsTheme
 import com.sugardevs.flashcards.ui.viewModels.PdfUploadScreenViewModel
 import com.sugardevs.flashcards.utils.FileUtils.copyPdfToCache
 import com.sugardevs.flashcards.utils.UploadUiState
 
-
 @Composable
 fun PdfUploadScreen(
+    navController: NavHostController,
     pdfUploadScreenViewModel: PdfUploadScreenViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
     val uiState = pdfUploadScreenViewModel.uiState
+    val navigateToTopic = pdfUploadScreenViewModel.navigateToTopic
 
-    // Launcher for picking a PDF file
     val pdfPickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocument(),
         onResult = { uri: Uri? ->
@@ -59,6 +56,14 @@ fun PdfUploadScreen(
             }
         }
     )
+
+
+    LaunchedEffect(navigateToTopic) {
+        navigateToTopic?.let { topic ->
+            navController.navigate(Cards(topicId = topic))
+            pdfUploadScreenViewModel.onNavigated()
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -73,7 +78,6 @@ fun PdfUploadScreen(
             modifier = Modifier.padding(8.dp)
         )
 
-        // PDF Upload Button
         IconButton(onClick = {
             pdfPickerLauncher.launch(arrayOf("application/pdf"))
         }) {
@@ -84,7 +88,6 @@ fun PdfUploadScreen(
             )
         }
 
-        // Text input and send button
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -124,44 +127,6 @@ fun PdfUploadScreen(
             }
             is UploadUiState.Error -> Text("Error: ${uiState.message}", color = Color.Red)
             UploadUiState.Idle -> {}
-        }
-    }
-}
-
-
-
-
-@Preview(showBackground = true, name = "Light Mode Preview")
-@Composable
-fun PdfUploadScreenPreview() {
-    FlashCardsTheme {
-        PdfUploadScreen()
-    }
-}
-
-@Preview(showBackground = true, name = "Dark Mode Preview")
-@Composable
-fun PdfUploadScreenPreviewDark() {
-    FlashCardsTheme(darkTheme = true) {
-        PdfUploadScreen()
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Preview(showBackground = true, name = "Scaffold Layout Preview")
-@Composable
-fun PdfUploadScreenWithScaffoldPreview() {
-    FlashCardsTheme {
-        Scaffold(
-            topBar = {
-                TopAppBar(
-                    title = { Text("Upload PDF") }
-                )
-            }
-        ) { innerPadding ->
-            Box(Modifier.padding(innerPadding)) {
-                PdfUploadScreen()
-            }
         }
     }
 }

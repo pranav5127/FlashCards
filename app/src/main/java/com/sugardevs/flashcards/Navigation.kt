@@ -8,8 +8,8 @@ import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -30,7 +30,7 @@ import kotlinx.serialization.Serializable
 object Home
 
 @Serializable
-data class Cards(val topicId: String = "1")
+data class Cards(val topicId: String)
 
 @Serializable
 object Exam
@@ -45,37 +45,49 @@ object Question
 @Composable
 fun MainAppNavigation() {
     val navController = rememberNavController()
+
+    var lastTopicId by  remember {mutableStateOf("")}
+
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
+    val currentRouteString = currentDestination?.route
+    val currentArgs = navBackStackEntry?.arguments
+    val currentTopicId = currentArgs?.getString("topicId")
 
-    val topBarTitle = when (currentDestination?.route) {
-        Home.javaClass.name -> "Home"
-        Cards.javaClass.name -> "Flash Cards"
-        Exam.javaClass.name -> "Exam"
-        Question.javaClass.name -> "Question"
-        PdfUpload.javaClass.name -> "Upload PDF"
+    // Update the lastTopicId if available
+    if (!currentTopicId.isNullOrBlank()) {
+        lastTopicId = currentTopicId
+    }
+
+    val topBarTitle = when {
+        currentRouteString == Home::class.qualifiedName -> "Home"
+        currentRouteString?.startsWith(Cards::class.qualifiedName!!) == true -> "Flash Cards: $currentTopicId"
+        currentRouteString == Exam::class.qualifiedName -> "Exam"
+        currentRouteString == Question::class.qualifiedName -> "Question"
+        currentRouteString == PdfUpload::class.qualifiedName -> "Upload PDF"
         else -> "Flashcards App"
     }
 
     Scaffold(
         topBar = {
-            if (currentDestination?.route != null) {
+            if (currentRouteString != null) {
                 TopBar(
                     title = topBarTitle,
                     showBackButton = navController.previousBackStackEntry != null,
-                    onBackClick = {
-                        navController.popBackStack()
-                    },
+                    onBackClick = { navController.popBackStack() },
                     modifier = Modifier,
-                    onProfileClick = {}
+                    onProfileClick = {} // Placeholder for profile click
                 )
             }
         },
         bottomBar = {
-            val isTopLevel = currentDestination?.route?.startsWith("Cards") == true ||
-                    currentDestination?.route == Home.javaClass.name ||
-                    currentDestination?.route == PdfUpload.javaClass.name
-
+            val isTopLevel = when {
+                currentRouteString == Home::class.qualifiedName -> true
+                currentRouteString?.startsWith(Cards::class.qualifiedName!!) == true -> true
+                currentRouteString == PdfUpload::class.qualifiedName -> true
+                currentRouteString == Exam::class.qualifiedName -> true
+                else -> false
+            }
 
             if (isTopLevel) {
                 BottomBar(
@@ -87,7 +99,9 @@ fun MainAppNavigation() {
                         }
                     },
                     onFlashCardsClick = {
-                        navController.navigate(Cards()) {
+                        // Use the last remembered topicId if available
+                        val topicToUse = lastTopicId ?: "default"
+                        navController.navigate(Cards(topicToUse)) {
                             popUpTo(navController.graph.startDestinationId) { saveState = true }
                             launchSingleTop = true
                             restoreState = true
@@ -118,7 +132,6 @@ fun MainAppNavigation() {
     }
 }
 
-
 @Composable
 fun AppNavHost(navController: NavHostController, modifier: Modifier = Modifier) {
     NavHost(
@@ -127,25 +140,25 @@ fun AppNavHost(navController: NavHostController, modifier: Modifier = Modifier) 
         modifier = modifier,
         enterTransition = {
             slideInHorizontally(
-                initialOffsetX = { fullWidth -> fullWidth }, // Slide in from the right
+                initialOffsetX = { fullWidth -> fullWidth },
                 animationSpec = tween(durationMillis = 300)
             ) + fadeIn(animationSpec = tween(durationMillis = 300))
         },
         exitTransition = {
             slideOutHorizontally(
-                targetOffsetX = { fullWidth -> -fullWidth }, // Slide out to the left
+                targetOffsetX = { fullWidth -> -fullWidth },
                 animationSpec = tween(durationMillis = 300)
             ) + fadeOut(animationSpec = tween(durationMillis = 300))
         },
         popEnterTransition = {
             slideInHorizontally(
-                initialOffsetX = { fullWidth -> -fullWidth }, // Slide in from the left (for pop)
+                initialOffsetX = { fullWidth -> -fullWidth },
                 animationSpec = tween(durationMillis = 300)
             ) + fadeIn(animationSpec = tween(durationMillis = 300))
         },
         popExitTransition = {
             slideOutHorizontally(
-                targetOffsetX = { fullWidth -> fullWidth }, // Slide out to the right (for pop)
+                targetOffsetX = { fullWidth -> fullWidth },
                 animationSpec = tween(durationMillis = 300)
             ) + fadeOut(animationSpec = tween(durationMillis = 300))
         }
@@ -156,7 +169,6 @@ fun AppNavHost(navController: NavHostController, modifier: Modifier = Modifier) 
         composable<Cards> { backStackEntry ->
             val args = backStackEntry.toRoute<Cards>()
             CardScreen(topicId = args.topicId)
-
         }
         composable<Exam> {
             ExamScreen()
@@ -165,7 +177,7 @@ fun AppNavHost(navController: NavHostController, modifier: Modifier = Modifier) 
             ExamQuestions()
         }
         composable<PdfUpload> {
-            PdfUploadScreen()
+            PdfUploadScreen(navController = navController)
         }
     }
 }

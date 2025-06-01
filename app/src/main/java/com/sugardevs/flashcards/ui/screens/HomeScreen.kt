@@ -1,20 +1,8 @@
 package com.sugardevs.flashcards.ui.screens
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -23,7 +11,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.sugardevs.flashcards.ui.components.FlashCardTopic
 import com.sugardevs.flashcards.ui.theme.FlashCardsTheme
 import com.sugardevs.flashcards.ui.viewModels.HomeScreenViewModel
@@ -31,20 +19,22 @@ import com.sugardevs.flashcards.ui.viewModels.HomeScreenViewModel
 @Composable
 fun HomeScreen(
     modifier: Modifier = Modifier,
-    homeScreenViewModel: HomeScreenViewModel = viewModel()
+    homeScreenViewModel: HomeScreenViewModel = hiltViewModel()
 ) {
     val homeScreenUiState by homeScreenViewModel.homeUiState.collectAsState()
-    val gradientColors = listOf(Color(0xFFB021EE),
-        Color(0xFF11DBFF), Color(0xFFD81B60)
+    val gradientColors = listOf(Color(0xFFB021EE), Color(0xFF11DBFF), Color(0xFFD81B60))
+
+    // Colors to cycle through for cards
+    val cardGradients = listOf(
+        Color(0xFF3DDC84) to Color(0xFF2B9D5C),
+        Color(0xFF42A5F5) to Color(0xFF00447F),
+        Color(0xFF7E57C2) to Color(0xFF5E35B1),
+        Color(0xFF740F90) to Color(0xFFB425B2)
     )
 
-    Surface(
-        modifier = modifier
-            .fillMaxSize()
-    ) {
+    Surface(modifier = modifier.fillMaxSize()) {
         Column(
-            modifier = Modifier
-                .fillMaxSize(),
+            modifier = Modifier.fillMaxSize(),
             horizontalAlignment = Alignment.Start,
             verticalArrangement = Arrangement.Top
         ) {
@@ -58,63 +48,43 @@ fun HomeScreen(
                     text = "Hi ${homeScreenUiState.userName},",
                     fontSize = 40.sp,
                     style = TextStyle(
-                        brush = Brush.horizontalGradient(
-                            colors = gradientColors
-                        )
+                        brush = Brush.horizontalGradient(colors = gradientColors)
                     )
                 )
             }
+
             Column(
+                modifier = Modifier.fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(24.dp)
+                verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp),
-                    horizontalArrangement = Arrangement.SpaceEvenly,
-                    verticalAlignment = Alignment.CenterVertically
 
-                ) {
-                    FlashCardTopic(
-                        subject = homeScreenUiState.subjects.subject1,
-                        gradientStartColor = Color(0xFF3DDC84),
-                        gradientEndColor = Color(0xFF2B9D5C),
-                        onCardClick = { /*TODO*/ }
-                    )
-                    FlashCardTopic(
-                        subject = homeScreenUiState.subjects.subject2,
-                        gradientStartColor = Color(0xFF42A5F5),
-                        gradientEndColor = Color(0xFF00447F),
-                        onCardClick = { /*TODO*/ }
-                    )
-                }
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp),
-                    horizontalArrangement = Arrangement.SpaceEvenly,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    FlashCardTopic(
-                        subject = homeScreenUiState.subjects.subject3,
-                        gradientStartColor = Color(0xFF7E57C2),
-                        gradientEndColor = Color(0xFF5E35B1),
-                        onCardClick = { /*TODO*/ }
-                    )
-                    FlashCardTopic(
-                        subject = homeScreenUiState.subjects.subject4,
-                        gradientStartColor = Color(0xFF740F90),
-                        gradientEndColor = Color(0xFFB425B2),
-                        onCardClick = { /*TODO*/ }
+                homeScreenUiState.subjects.take(4).chunked(2).forEachIndexed { rowIndex, rowSubjects ->
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp),
+                        horizontalArrangement = Arrangement.SpaceEvenly,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        rowSubjects.forEachIndexed { colIndex, subject ->
+                            val (startColor, endColor) = cardGradients[
+                                (rowIndex * 2 + colIndex) % cardGradients.size
+                            ]
 
-                    )
+                            FlashCardTopic(
+                                subject = subject,
+                                gradientStartColor = startColor,
+                                gradientEndColor = endColor,
+                                onCardClick = { /* TODO: handle subject click */ }
+                            )
+                        }
+                    }
                 }
             }
         }
     }
 }
-
 
 @Preview(
     showBackground = true,
@@ -122,9 +92,7 @@ fun HomeScreen(
 )
 @Composable
 fun HomeScreenPreview() {
-    FlashCardsTheme(
-        darkTheme = false
-    ) {
+    FlashCardsTheme(darkTheme = false) {
         HomeScreen()
     }
 }
@@ -135,9 +103,7 @@ fun HomeScreenPreview() {
 )
 @Composable
 fun HomeScreenPreviewDarkTheme() {
-    FlashCardsTheme(
-        darkTheme = true
-    ) {
+    FlashCardsTheme(darkTheme = true) {
         HomeScreen()
     }
 }
@@ -148,7 +114,7 @@ fun HomeScreenPreviewDarkTheme() {
 fun HomeScreenWithScaffoldPreview() {
     FlashCardsTheme {
         Scaffold(
-            topBar = { TopAppBar(title = { Text("Home Screen Preview") }) },
+            topBar = { TopAppBar(title = { Text("Home Screen Preview") }) }
         ) { paddingValues ->
             Box(Modifier.padding(paddingValues)) {
                 HomeScreen()
