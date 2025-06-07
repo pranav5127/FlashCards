@@ -2,15 +2,15 @@ package com.sugardevs.flashcards.data.local.repository
 
 import com.sugardevs.flashcards.data.local.dao.TopicDao
 import com.sugardevs.flashcards.data.local.model.TopicEntity
+import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
 class TopicRepository @Inject constructor(private val dao: TopicDao) {
 
     fun getAllTopics() = dao.getAllTopics()
 
-    suspend fun getTopicById(topicId: String): TopicEntity? = dao.getTopicById(topicId)
 
-    suspend fun getAllCardsNewestFirst() = dao.getAllCardsNewestFirst()
+    suspend fun getAllCardsNewestFirstFlow(): Flow<List<TopicEntity>> = dao.getAllCardsNewestFirstFlow()
 
     suspend fun insertTopic(topic: TopicEntity) = dao.insertTopic(topic)
 

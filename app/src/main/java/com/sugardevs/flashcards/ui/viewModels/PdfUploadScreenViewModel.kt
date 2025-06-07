@@ -28,7 +28,6 @@ class PdfUploadScreenViewModel @Inject constructor(
     var text by mutableStateOf("")
         private set
 
-
     var navigateToTopicId by mutableStateOf<String?>(null)
         private set
 
@@ -59,12 +58,10 @@ class PdfUploadScreenViewModel @Inject constructor(
                         return@launch
                     }
 
-                    topicRepository.ensureTopicExists(
-                        topicId = topicIdAndNameFromServer,
-                        topicName = topicIdAndNameFromServer
-                    )
-                    Log.d("PdfUploadViewModel", "Ensured topic exists: ID/Name='$topicIdAndNameFromServer'")
+                    // Ensure topic exists before inserting cards
+                    topicRepository.ensureTopicExists(topicIdAndNameFromServer, topicIdAndNameFromServer)
 
+                    Log.d("PdfUploadViewModel", "Saving cards for topic ID (from server): '$topicIdAndNameFromServer'")
                     cardsDbRepository.saveCards(topicIdAndNameFromServer, response.points)
                     Log.d("PdfUploadViewModel", "Saved ${response.points.size} cards for topic: $topicIdAndNameFromServer")
 
@@ -100,12 +97,9 @@ class PdfUploadScreenViewModel @Inject constructor(
                         return@launch
                     }
 
-                    topicRepository.ensureTopicExists(
-                        topicId = topicIdAndNameFromServer,
-                        topicName = topicIdAndNameFromServer
-                    )
-                    Log.d("PdfUploadViewModel", "Ensured topic exists: ID/Name='$topicIdAndNameFromServer'")
+                    topicRepository.ensureTopicExists(topicIdAndNameFromServer, topicIdAndNameFromServer)
 
+                    Log.d("PdfUploadViewModel", "Saving cards from PDF for topic ID (from server): '$topicIdAndNameFromServer'")
                     cardsDbRepository.saveCards(topicIdAndNameFromServer, response.points)
                     Log.d("PdfUploadViewModel", "Saved ${response.points.size} cards for topic: $topicIdAndNameFromServer from PDF")
 

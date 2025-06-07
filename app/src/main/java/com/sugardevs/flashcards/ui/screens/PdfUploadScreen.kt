@@ -57,7 +57,6 @@ fun PdfUploadScreen(
         }
     )
 
-
     LaunchedEffect(navigateToTopic) {
         navigateToTopic?.let { topic ->
             navController.navigate(Cards(topicId = topic))

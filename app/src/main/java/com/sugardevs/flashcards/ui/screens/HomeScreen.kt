@@ -7,11 +7,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.rememberNavController
+import com.sugardevs.flashcards.Cards
 import com.sugardevs.flashcards.ui.components.FlashCardTopic
 import com.sugardevs.flashcards.ui.theme.FlashCardsTheme
 import com.sugardevs.flashcards.ui.viewModels.HomeScreenViewModel
@@ -19,6 +23,7 @@ import com.sugardevs.flashcards.ui.viewModels.HomeScreenViewModel
 @Composable
 fun HomeScreen(
     modifier: Modifier = Modifier,
+    navController: NavHostController ,
     homeScreenViewModel: HomeScreenViewModel = hiltViewModel()
 ) {
     val homeScreenUiState by homeScreenViewModel.homeUiState.collectAsState()
@@ -75,7 +80,9 @@ fun HomeScreen(
                                 subject = subject,
                                 gradientStartColor = startColor,
                                 gradientEndColor = endColor,
-                                onCardClick = { /* TODO: handle subject click */ }
+                                onCardClick = {
+                                    navController.navigate(Cards(subject.topicId))
+                                }
                             )
                         }
                     }
@@ -92,7 +99,9 @@ fun HomeScreen(
 @Composable
 fun HomeScreenPreview() {
     FlashCardsTheme(darkTheme = false) {
-        HomeScreen()
+        HomeScreen(
+            navController = rememberNavController()
+        )
     }
 }
 
@@ -103,7 +112,7 @@ fun HomeScreenPreview() {
 @Composable
 fun HomeScreenPreviewDarkTheme() {
     FlashCardsTheme(darkTheme = true) {
-        HomeScreen()
+        HomeScreen( navController = NavHostController(context = LocalContext.current))
     }
 }
 
@@ -116,7 +125,7 @@ fun HomeScreenWithScaffoldPreview() {
             topBar = { TopAppBar(title = { Text("Home Screen Preview") }) }
         ) { paddingValues ->
             Box(Modifier.padding(paddingValues)) {
-                HomeScreen()
+                HomeScreen( navController = NavHostController(context = LocalContext.current))
             }
         }
     }

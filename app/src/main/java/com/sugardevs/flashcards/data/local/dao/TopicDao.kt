@@ -5,7 +5,6 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
-import com.sugardevs.flashcards.data.local.model.CardEntity
 import com.sugardevs.flashcards.data.local.model.TopicEntity
 import kotlinx.coroutines.flow.Flow
 
@@ -28,7 +27,7 @@ interface TopicDao {
     fun getTopicById(topicId: String): TopicEntity?
 
     @Query("SELECT * FROM topics ORDER BY createdAt DESC")
-    suspend fun getAllCardsNewestFirst(): List<TopicEntity>
+     fun getAllCardsNewestFirstFlow(): Flow<List<TopicEntity>>
 
     @Query("DELETE FROM topics WHERE id = :topicId")
     suspend fun deleteTopicById(topicId: String)

@@ -28,6 +28,5 @@ interface CardDao {
     @Query("DELETE FROM cards WHERE topicId = :topicId")
     suspend fun deleteCardsByTopicId(topicId: String)
 
-    @Query("SELECT DISTINCT topicId FROM cards")
-    suspend fun getAllTopics(): List<String>
+
 }

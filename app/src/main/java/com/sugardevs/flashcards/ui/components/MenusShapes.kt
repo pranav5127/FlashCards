@@ -18,12 +18,12 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.sugardevs.flashcards.data.local.model.TopicEntity
+import com.sugardevs.flashcards.ui.model.Subject
 
 @Composable
 fun FlashCardTopic(
     modifier: Modifier = Modifier,
-    subject: TopicEntity ,
+    subject: Subject,
     onCardClick: () -> Unit,
     gradientStartColor: Color = Color(0xFF64B5F6),
     gradientEndColor: Color = Color(0xFF2196F3)
@@ -61,7 +61,7 @@ fun FlashCardTopic(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    text = subject.name,
+                    text = subject.topicId,
                     color = textColor,
                     fontSize = 24.sp,
                 )
