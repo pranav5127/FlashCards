@@ -30,7 +30,11 @@ import androidx.compose.ui.unit.sp
 import com.sugardevs.flashcards.ui.theme.FlashCardsTheme
 
 @Composable
-fun ExamCard(subject: String, questionCount: Int) {
+fun ExamCard(
+    subject: String,
+    questionCount: Int,
+    onExamCardClick: (String) -> Unit
+) {
     Card(
         shape = RoundedCornerShape(16.dp),
         elevation = CardDefaults.cardElevation(8.dp),
@@ -58,7 +62,7 @@ fun ExamCard(subject: String, questionCount: Int) {
                 style = MaterialTheme.typography.bodyMedium
             )
             IconButton(
-                onClick = { /* TODO: Start Exam */ },
+                onClick = { onExamCardClick(subject) },
                 modifier = Modifier
                     .height(56.dp)
                     .width(56.dp)
@@ -79,7 +83,7 @@ fun ExamCard(subject: String, questionCount: Int) {
 @Preview
 @Composable
 fun ExamCardPreview() {
-    ExamCard(subject = "Android", questionCount = 10)
+    ExamCard(subject = "Android", questionCount = 10, onExamCardClick = {})
 }
 @Preview
 @Composable
@@ -87,7 +91,7 @@ fun ExamCardPreviewDarkMode() {
     FlashCardsTheme(
         darkTheme = true
     ) {
-        ExamCard(subject = "Android", questionCount = 10)
+        ExamCard(subject = "Android", questionCount = 10, onExamCardClick = {})
     }
 }
 

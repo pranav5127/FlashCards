@@ -44,7 +44,7 @@ data class Exam(val subject: String, val questionCount: Int)
 object PdfUpload
 
 @Serializable
-object Question
+data class Question(val subject: String)
 
 @Serializable
 object CardGrid
@@ -160,8 +160,7 @@ fun AppNavHost(navController: NavHostController, modifier: Modifier = Modifier) 
         },
         popExitTransition = {
             slideOutHorizontally(
-                targetOffsetX = { fullWidth -> fullWidth },
-                animationSpec = tween(durationMillis = 300)
+                targetOffsetX = { fullWidth -> fullWidth }, animationSpec = tween(durationMillis = 300)
             ) + fadeOut(animationSpec = tween(durationMillis = 300))
         }) {
         composable<Home> {
@@ -173,10 +172,16 @@ fun AppNavHost(navController: NavHostController, modifier: Modifier = Modifier) 
         }
         composable<Exam> { backStackEntry ->
             val args = backStackEntry.toRoute<Exam>()
-            ExamScreen(subject = args.subject, questionCount = args.questionCount)
+            ExamScreen(
+                subject = args.subject,
+                questionCount = args.questionCount,
+                onExamCardClick = { subject ->
+                    navController.navigate(Question(subject))
+                })
         }
-        composable<Question> {
-            ExamQuestions()
+        composable<Question> { backStackEntry ->
+            val args = backStackEntry.toRoute<Question>()
+            ExamQuestions(subject = args.subject)
         }
         composable<PdfUpload> {
             PdfUploadScreen(navController = navController)

@@ -38,6 +38,7 @@ fun ExamQuestions(
     modifier: Modifier = Modifier,
     questionNumber: Int = 1,
     totalQuestions: Int = 10,
+    subject: String,
     questionText: String = "What is the capital of France?",
     onNextClick: () -> Unit = {},
     onPreviousClick: () -> Unit = {},
@@ -57,7 +58,7 @@ fun ExamQuestions(
         )
 
         Text(
-            text = "Question $questionNumber",
+            text = subject,
             fontSize = 26.sp,
             fontWeight = FontWeight.Bold,
             modifier = Modifier
@@ -161,7 +162,7 @@ fun OptionItem(optionText: String) {
 @Composable
 fun ExamQuestionPreviewLight() {
     FlashCardsTheme(darkTheme = false) {
-        ExamQuestions()
+        ExamQuestions(subject = "")
     }
 }
 
@@ -169,7 +170,7 @@ fun ExamQuestionPreviewLight() {
 @Composable
 fun ExamQuestionPreviewDark() {
     FlashCardsTheme(darkTheme = true) {
-        ExamQuestions()
+        ExamQuestions(subject = "")
     }
 }
 
@@ -182,7 +183,7 @@ fun ExamQuestionsWithScaffoldPreview() {
             topBar = { TopAppBar(title = { Text("Exam Questions Preview") }) },
         ) { paddingValues ->
             Box(Modifier.padding(paddingValues)) {
-                ExamQuestions()
+                ExamQuestions(subject = "")
             }
         }
     }

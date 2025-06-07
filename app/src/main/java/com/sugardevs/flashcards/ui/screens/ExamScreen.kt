@@ -11,10 +11,11 @@ import com.sugardevs.flashcards.ui.theme.FlashCardsTheme
 @Composable
 fun ExamScreen(
     subject: String,
-    questionCount: Int
+    questionCount: Int,
+    onExamCardClick: (String) -> Unit = {}
 ) {
     Box(modifier = Modifier.fillMaxSize()) {
-        ExamCard(subject, questionCount)
+        ExamCard(subject, questionCount, onExamCardClick)
     }
 }
 
