@@ -1,5 +1,6 @@
 package com.sugardevs.flashcards.ui.components
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -7,131 +8,182 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.sugardevs.flashcards.R
-import com.sugardevs.flashcards.ui.theme.FlashCardsTheme
+import com.sugardevs.flashcards.ui.viewModels.ExamScreenViewModel
 
 @Composable
 fun ExamQuestions(
     modifier: Modifier = Modifier,
-    questionNumber: Int = 1,
-    totalQuestions: Int = 10,
-    subject: String,
-    questionText: String = "What is the capital of France?",
-    onNextClick: () -> Unit = {},
-    onPreviousClick: () -> Unit = {},
-    onSubmitClick: () -> Unit = {}
+    topicId: String,
+    viewModel: ExamScreenViewModel = hiltViewModel(),
+    onSubmitExam: () -> Unit = {}
 ) {
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text(
-            text = "Question $questionNumber of $totalQuestions",
-            fontSize = 18.sp,
-            fontWeight = FontWeight.Medium,
-            color = MaterialTheme.colorScheme.primary
-        )
+    val questions by viewModel.questionsByTopic.collectAsState()
+    val isLoading by viewModel.isLoading.collectAsState()
+    val errorMessage by viewModel.errorMessage.collectAsState()
 
-        Text(
-            text = subject,
-            fontSize = 26.sp,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier
-                .padding(top = 8.dp, bottom = 16.dp)
-                .align(Alignment.CenterHorizontally)
-        )
+    var currentQuestionIndex by remember { mutableIntStateOf(0) }
+    var selectedAnswers by remember { mutableStateOf(mapOf<Int, String>()) }
 
-        Text(
-            text = questionText,
-            fontSize = 20.sp,
-            fontWeight = FontWeight.Normal,
-            textAlign = TextAlign.Center,
-            modifier = Modifier
-                .padding(horizontal = 12.dp, vertical = 8.dp)
-                .fillMaxWidth()
-        )
+    LaunchedEffect(topicId) {
+        viewModel.loadQuestionsByTopicId(topicId)
+    }
 
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 16.dp),
-            shape = RoundedCornerShape(16.dp),
-            elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
-        ) {
-            Column(
-                modifier = Modifier
-                    .padding(24.dp)
-                    .fillMaxWidth(),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                OptionItem("Paris")
-                OptionItem("London")
-                OptionItem("Berlin")
-                OptionItem("Madrid")
-            }
+    if (isLoading) {
+        Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            CircularProgressIndicator()
         }
+        return
+    }
 
-        Spacer(modifier = Modifier.height(24.dp))
+    if (errorMessage != null) {
+        Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            Text("Error: $errorMessage", color = Color.Red)
+        }
+        return
+    }
 
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 32.dp),
-            horizontalArrangement = Arrangement.SpaceBetween
+    if (questions.isEmpty()) {
+        Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            Text("No questions available for this topic.")
+        }
+        return
+    }
+
+    val currentQuestion = questions.getOrNull(currentQuestionIndex)
+
+    currentQuestion?.let { examEntity ->
+        Column(
+            modifier = modifier
+                .fillMaxSize()
+                .padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            IconButton(
-                onClick = onPreviousClick,
-                enabled = questionNumber > 1
+            Text(
+                text = "Question ${currentQuestionIndex + 1} of ${questions.size}",
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Medium,
+                color = MaterialTheme.colorScheme.primary
+            )
+
+            Text(
+                text = "Topic: $topicId",
+                fontSize = 26.sp,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier
+                    .padding(top = 8.dp, bottom = 16.dp)
+                    .align(Alignment.CenterHorizontally)
+            )
+
+            Text(
+                text = examEntity.question,
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Normal,
+                textAlign = TextAlign.Center,
+                modifier = Modifier
+                    .padding(horizontal = 12.dp, vertical = 8.dp)
+                    .fillMaxWidth()
+            )
+
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 16.dp),
+                shape = RoundedCornerShape(16.dp),
+                elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
             ) {
-                Icon(
-                    painter = painterResource(R.drawable.outline_arrow_circle_left_24),
-                    contentDescription = "Previous",
-                    modifier = Modifier.size(64.dp)
-                )
+                Column(
+                    modifier = Modifier
+                        .padding(24.dp)
+                        .fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    examEntity.options.forEach { option ->
+                        OptionItem(
+                            optionText = option,
+                            isSelected = selectedAnswers[examEntity.id] == option,
+                            onOptionSelected = {
+                                selectedAnswers = selectedAnswers + (examEntity.id to option)
+                            }
+                        )
+                    }
+                }
             }
 
-            if (questionNumber < totalQuestions) {
-                IconButton(onClick = onNextClick) {
+            Spacer(modifier = Modifier.weight(1f))
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 32.dp, vertical = 16.dp),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                IconButton(
+                    onClick = {
+                        if (currentQuestionIndex > 0) {
+                            currentQuestionIndex--
+                        }
+                    },
+                    enabled = currentQuestionIndex > 0
+                ) {
                     Icon(
-                        painter = painterResource(R.drawable.outline_arrow_circle_right_24),
-                        contentDescription = "Next",
+                        painter = painterResource(R.drawable.outline_arrow_circle_left_24),
+                        contentDescription = "Previous",
                         modifier = Modifier.size(64.dp)
                     )
                 }
-            } else {
-                IconButton(onClick = onSubmitClick) {
-                    Icon(
-                        painter = painterResource(R.drawable.baseline_check_circle_outline_24),
-                        contentDescription = "Submit",
-                        modifier = Modifier.size(64.dp),
-                        tint = MaterialTheme.colorScheme.primary
-                    )
+
+                if (currentQuestionIndex < questions.size - 1) {
+                    IconButton(onClick = {
+                        currentQuestionIndex++
+                    }) {
+                        Icon(
+                            painter = painterResource(R.drawable.outline_arrow_circle_right_24),
+                            contentDescription = "Next",
+                            modifier = Modifier.size(64.dp)
+                        )
+                    }
+                } else {
+                    IconButton(onClick = {
+                        println("Exam Submitted. Answers: $selectedAnswers")
+                        onSubmitExam()
+                    }) {
+                        Icon(
+                            painter = painterResource(R.drawable.baseline_check_circle_outline_24),
+                            contentDescription = "Submit",
+                            modifier = Modifier.size(64.dp),
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    }
                 }
             }
         }
@@ -139,12 +191,18 @@ fun ExamQuestions(
 }
 
 @Composable
-fun OptionItem(optionText: String) {
+fun OptionItem(
+    optionText: String,
+    isSelected: Boolean,
+    onOptionSelected: () -> Unit
+) {
     Surface(
         shape = RoundedCornerShape(12.dp),
-        color = MaterialTheme.colorScheme.primaryContainer,
+        color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.primaryContainer,
         tonalElevation = 2.dp,
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onOptionSelected)
     ) {
         Text(
             text = optionText,
@@ -153,38 +211,7 @@ fun OptionItem(optionText: String) {
             style = MaterialTheme.typography.bodyLarge.copy(
                 fontWeight = FontWeight.SemiBold
             ),
-            color = MaterialTheme.colorScheme.onPrimaryContainer
+            color = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onPrimaryContainer
         )
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun ExamQuestionPreviewLight() {
-    FlashCardsTheme(darkTheme = false) {
-        ExamQuestions(subject = "")
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun ExamQuestionPreviewDark() {
-    FlashCardsTheme(darkTheme = true) {
-        ExamQuestions(subject = "")
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Preview(showBackground = true, name = "Exam Questions With Scaffold Preview")
-@Composable
-fun ExamQuestionsWithScaffoldPreview() {
-    FlashCardsTheme {
-        Scaffold(
-            topBar = { TopAppBar(title = { Text("Exam Questions Preview") }) },
-        ) { paddingValues ->
-            Box(Modifier.padding(paddingValues)) {
-                ExamQuestions(subject = "")
-            }
-        }
     }
 }

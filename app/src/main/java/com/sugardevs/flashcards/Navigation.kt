@@ -38,13 +38,16 @@ object Home
 data class Cards(val topicId: String)
 
 @Serializable
-data class Exam(val subject: String, val questionCount: Int)
+data class Exam(
+    val subject: String,
+    val questionCount: Int
+)
 
 @Serializable
 object PdfUpload
 
 @Serializable
-data class Question(val subject: String)
+data class Question(val topicId: String)
 
 @Serializable
 object CardGrid
@@ -57,25 +60,32 @@ object ExamGrid
 fun MainAppNavigation() {
     val navController = rememberNavController()
 
-    var lastTopicId by remember { mutableStateOf("") }
-
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
     val currentRouteString = currentDestination?.route
     val currentArgs = navBackStackEntry?.arguments
-    val currentTopicId = currentArgs?.getString("topicId")
 
-    if (!currentTopicId.isNullOrBlank()) {
-        lastTopicId = currentTopicId
+    val displayTopicId = when {
+        currentRouteString?.startsWith(Cards::class.qualifiedName!!) == true -> currentArgs?.getString("topicId")
+        currentRouteString?.startsWith(Exam::class.qualifiedName!!) == true -> currentArgs?.getString("subject") // Assuming 'subject' in Exam route is the ID
+        currentRouteString?.startsWith(Question::class.qualifiedName!!) == true -> currentArgs?.getString("topicId")
+        else -> null
     }
+
+    var lastTopicId by remember { mutableStateOf("") }
+    if (!displayTopicId.isNullOrBlank()) {
+        lastTopicId = displayTopicId
+    }
+
 
     val topBarTitle = when {
         currentRouteString == Home::class.qualifiedName -> "Home"
-        currentRouteString?.startsWith(Cards::class.qualifiedName!!) == true -> "Flash Cards: $currentTopicId"
-        currentRouteString == Exam::class.qualifiedName -> "Exam"
-        currentRouteString == Question::class.qualifiedName -> "Question"
+        currentRouteString?.startsWith(Cards::class.qualifiedName!!) == true -> "Flash Cards: $lastTopicId"
+        currentRouteString?.startsWith(Exam::class.qualifiedName!!) == true -> "Exam: $lastTopicId" // Updated to show topic
+        currentRouteString?.startsWith(Question::class.qualifiedName!!) == true -> "Question: $lastTopicId" // Updated to show topic
         currentRouteString == PdfUpload::class.qualifiedName -> "Upload PDF"
-        currentRouteString == CardGrid::class.qualifiedName -> "Exam Subjects"
+        currentRouteString == CardGrid::class.qualifiedName -> "Card Topics"
+        currentRouteString == ExamGrid::class.qualifiedName -> "Exam Topics"
         else -> "Flashcards App"
     }
 
@@ -86,18 +96,21 @@ fun MainAppNavigation() {
                 showBackButton = navController.previousBackStackEntry != null,
                 onBackClick = { navController.popBackStack() },
                 modifier = Modifier,
-                onProfileClick = {} // Placeholder for profile click
+                onProfileClick = {}
             )
         }
     }, bottomBar = {
-        val isTopLevel = when {
-            currentRouteString == Home::class.qualifiedName -> true
-            currentRouteString?.startsWith(Cards::class.qualifiedName!!) == true -> true
-            currentRouteString == PdfUpload::class.qualifiedName -> true
-            currentRouteString == Exam::class.qualifiedName -> true
-            currentRouteString == CardGrid::class.qualifiedName -> true
-            currentRouteString == ExamGrid::class.qualifiedName -> true
-            else -> false
+        val isTopLevel = when (currentRouteString) {
+            Home::class.qualifiedName,
+            Cards::class.qualifiedName,
+            PdfUpload::class.qualifiedName,
+            Exam::class.qualifiedName,
+            CardGrid::class.qualifiedName,
+            ExamGrid::class.qualifiedName -> true
+            else -> {
+                currentRouteString?.startsWith(Cards::class.qualifiedName!!) == true ||
+                        currentRouteString?.startsWith(Exam::class.qualifiedName!!) == true
+            }
         }
 
         if (isTopLevel) {
@@ -108,7 +121,7 @@ fun MainAppNavigation() {
                     restoreState = true
                 }
             }, onFlashCardsClick = {
-                navController.navigate(CardGrid) {
+                navController.navigate(CardGrid) { // Navigates to grid to select a topic first
                     popUpTo(navController.graph.startDestinationId) { saveState = true }
                     launchSingleTop = true
                     restoreState = true
@@ -162,7 +175,8 @@ fun AppNavHost(navController: NavHostController, modifier: Modifier = Modifier) 
             slideOutHorizontally(
                 targetOffsetX = { fullWidth -> fullWidth }, animationSpec = tween(durationMillis = 300)
             ) + fadeOut(animationSpec = tween(durationMillis = 300))
-        }) {
+        }
+    ) {
         composable<Home> {
             HomeScreen(navController = navController)
         }
@@ -175,13 +189,19 @@ fun AppNavHost(navController: NavHostController, modifier: Modifier = Modifier) 
             ExamScreen(
                 subject = args.subject,
                 questionCount = args.questionCount,
-                onExamCardClick = { subject ->
-                    navController.navigate(Question(subject))
-                })
+                onExamCardClick = { actualTopicId ->
+                    navController.navigate(Question(topicId = actualTopicId))
+                }
+            )
         }
         composable<Question> { backStackEntry ->
             val args = backStackEntry.toRoute<Question>()
-            ExamQuestions(subject = args.subject)
+            ExamQuestions(
+                topicId = args.topicId,
+                onSubmitExam = {
+                    navController.popBackStack()
+                }
+            )
         }
         composable<PdfUpload> {
             PdfUploadScreen(navController = navController)
@@ -189,21 +209,21 @@ fun AppNavHost(navController: NavHostController, modifier: Modifier = Modifier) 
         composable<CardGrid> {
             CardsGridScreen(
                 onCardsClick = { topicId ->
-                    navController.navigate(Cards(topicId))
-                })
-
+                    navController.navigate(Cards(topicId = topicId))
+                }
+            )
         }
         composable<ExamGrid> {
             ExamGridScreen(
                 onExamClick = { topicId ->
                     navController.navigate(
                         Exam(
-                            subject = topicId, questionCount = 10
-
+                            subject = topicId,
+                            questionCount = 10
                         )
                     )
-
-                })
+                }
+            )
         }
     }
 }

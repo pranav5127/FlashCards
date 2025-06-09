@@ -6,7 +6,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.sugardevs.flashcards.data.local.repository.CardsDbRepository
+import com.sugardevs.flashcards.data.local.repository.CardsRepository
 import com.sugardevs.flashcards.data.local.repository.TopicRepository
 import com.sugardevs.flashcards.data.network.model.CardsRequest
 import com.sugardevs.flashcards.data.network.repository.CardsNetworkRepository
@@ -19,7 +19,7 @@ import javax.inject.Inject
 @HiltViewModel
 class PdfUploadScreenViewModel @Inject constructor(
     private val networkRepository: CardsNetworkRepository,
-    private val cardsDbRepository: CardsDbRepository,
+    private val cardsRepository: CardsRepository,
     private val topicRepository: TopicRepository
 ) : ViewModel() {
 
@@ -62,7 +62,7 @@ class PdfUploadScreenViewModel @Inject constructor(
                     topicRepository.ensureTopicExists(topicIdAndNameFromServer, topicIdAndNameFromServer)
 
                     Log.d("PdfUploadViewModel", "Saving cards for topic ID (from server): '$topicIdAndNameFromServer'")
-                    cardsDbRepository.saveCards(topicIdAndNameFromServer, response.points)
+                    cardsRepository.saveCards(topicIdAndNameFromServer, response.points)
                     Log.d("PdfUploadViewModel", "Saved ${response.points.size} cards for topic: $topicIdAndNameFromServer")
 
                     uiState = UploadUiState.Success(response)
@@ -100,7 +100,7 @@ class PdfUploadScreenViewModel @Inject constructor(
                     topicRepository.ensureTopicExists(topicIdAndNameFromServer, topicIdAndNameFromServer)
 
                     Log.d("PdfUploadViewModel", "Saving cards from PDF for topic ID (from server): '$topicIdAndNameFromServer'")
-                    cardsDbRepository.saveCards(topicIdAndNameFromServer, response.points)
+                    cardsRepository.saveCards(topicIdAndNameFromServer, response.points)
                     Log.d("PdfUploadViewModel", "Saved ${response.points.size} cards for topic: $topicIdAndNameFromServer from PDF")
 
                     uiState = UploadUiState.Success(response)
