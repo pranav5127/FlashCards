@@ -27,7 +27,7 @@ fun HomeScreen(
     homeScreenViewModel: HomeScreenViewModel = hiltViewModel()
 ) {
     val homeScreenUiState by homeScreenViewModel.homeUiState.collectAsState()
-    val gradientColors = listOf(Color(0xFFB021EE), Color(0xFF11DBFF), Color(0xFFD81B60))
+    val gradientColors = listOf(Color(0xFFD0BBDE), Color(0xFFE0F7FA), Color(0xFFFCE4EC))
 
     val cardGradients = listOf(
         Color(0xFF3DDC84) to Color(0xFF2B9D5C),
