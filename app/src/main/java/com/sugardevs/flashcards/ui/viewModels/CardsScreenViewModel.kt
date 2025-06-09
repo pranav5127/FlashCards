@@ -2,9 +2,8 @@ package com.sugardevs.flashcards.ui.viewModels
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.sugardevs.flashcards.data.local.repository.CardsDbRepository
+import com.sugardevs.flashcards.data.local.repository.CardsRepository
 import com.sugardevs.flashcards.ui.model.CardsUiState
-import com.sugardevs.flashcards.utils.SortMode
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -14,7 +13,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class CardsScreenViewModel @Inject constructor(
-    private val repository: CardsDbRepository
+    private val repository: CardsRepository
 ) : ViewModel() {
 
     private val _cardsUiState = MutableStateFlow(CardsUiState())

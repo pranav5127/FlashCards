@@ -12,7 +12,7 @@ import com.sugardevs.flashcards.ui.theme.FlashCardsTheme
 fun ExamScreen(
     subject: String,
     questionCount: Int,
-    onExamCardClick: (String) -> Unit = {}
+    onExamCardClick: (actualTopicId: String) -> Unit = {}
 ) {
     Box(modifier = Modifier.fillMaxSize()) {
         ExamCard(subject, questionCount, onExamCardClick)

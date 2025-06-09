@@ -5,7 +5,7 @@ import com.sugardevs.flashcards.data.local.model.CardEntity
 import com.sugardevs.flashcards.utils.SortMode
 import javax.inject.Inject
 
-class CardsDbRepository @Inject constructor(private val dao: CardDao) {
+class CardsRepository @Inject constructor(private val dao: CardDao) {
 
     suspend fun getCardsByTopicId(topicId: String): List<String> {
         return dao.getCardsByTopicId(topicId).map { it.content }
@@ -19,7 +19,6 @@ class CardsDbRepository @Inject constructor(private val dao: CardDao) {
             SortMode.REVERSE_ALPHABETICAL -> dao.getAllCardsReverseAlphabetical()
         }
     }
-
 
     suspend fun saveCards(topicId: String, points: List<String>) {
         val cardEntities = points.map { point ->
