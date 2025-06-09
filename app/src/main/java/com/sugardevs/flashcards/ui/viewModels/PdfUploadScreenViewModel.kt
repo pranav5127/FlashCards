@@ -6,7 +6,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.sugardevs.flashcards.data.local.model.ExamEntity
 import com.sugardevs.flashcards.data.local.repository.CardsRepository
+import com.sugardevs.flashcards.data.local.repository.ExamRepository
 import com.sugardevs.flashcards.data.local.repository.TopicRepository
 import com.sugardevs.flashcards.data.network.model.CardsRequest
 import com.sugardevs.flashcards.data.network.repository.CardsNetworkRepository
@@ -20,7 +22,8 @@ import javax.inject.Inject
 class PdfUploadScreenViewModel @Inject constructor(
     private val networkRepository: CardsNetworkRepository,
     private val cardsRepository: CardsRepository,
-    private val topicRepository: TopicRepository
+    private val topicRepository: TopicRepository,
+    private val examRepository: ExamRepository
 ) : ViewModel() {
 
     var uiState by mutableStateOf<UploadUiState>(UploadUiState.Idle)
@@ -58,20 +61,27 @@ class PdfUploadScreenViewModel @Inject constructor(
                         return@launch
                     }
 
-                    // Ensure topic exists before inserting cards
                     topicRepository.ensureTopicExists(topicIdAndNameFromServer, topicIdAndNameFromServer)
 
                     Log.d("PdfUploadViewModel", "Saving cards for topic ID (from server): '$topicIdAndNameFromServer'")
                     cardsRepository.saveCards(topicIdAndNameFromServer, response.points)
+                    examRepository.insertQuestionsFromDto(topicIdAndNameFromServer, response.questions)
                     Log.d("PdfUploadViewModel", "Saved ${response.points.size} cards for topic: $topicIdAndNameFromServer")
 
                     uiState = UploadUiState.Success(response)
                     navigateToTopicId = topicIdAndNameFromServer
                     text = ""
                 } else {
-                    val errorBody = result.errorBody()?.string() ?: "Unknown error"
-                    Log.e("PdfUploadViewModel", "Error fetching cards for topic '$trimmedTopicName': ${result.code()} - $errorBody")
-                    uiState = UploadUiState.Error("Error: $errorBody")
+                    if (result.code() == 400) {
+                        // Handle Bad Request (400) error
+                        Log.e("PdfUploadViewModel", "Bad Request (400) for topic '$trimmedTopicName'")
+                        val errorBody = result.errorBody()?.string() ?: "Bad Request - The server could not process your request."
+                        uiState = UploadUiState.Error("Error: $errorBody")
+                    } else {
+                        val errorBody = result.errorBody()?.string() ?: "Unknown error"
+                        Log.e("PdfUploadViewModel", "Error fetching cards for topic '$trimmedTopicName': ${result.code()} - $errorBody")
+                        uiState = UploadUiState.Error("Error: $errorBody")
+                    }
                 }
             } catch (e: Exception) {
                 Log.e("PdfUploadViewModel", "Exception in uploadTopic for '$trimmedTopicName'", e)
@@ -101,21 +111,31 @@ class PdfUploadScreenViewModel @Inject constructor(
 
                     Log.d("PdfUploadViewModel", "Saving cards from PDF for topic ID (from server): '$topicIdAndNameFromServer'")
                     cardsRepository.saveCards(topicIdAndNameFromServer, response.points)
+                    examRepository.insertQuestionsFromDto(topicIdAndNameFromServer, response.questions)
                     Log.d("PdfUploadViewModel", "Saved ${response.points.size} cards for topic: $topicIdAndNameFromServer from PDF")
 
                     uiState = UploadUiState.Success(response)
                     navigateToTopicId = topicIdAndNameFromServer
                 } else {
-                    val errorBody = result.errorBody()?.string() ?: "Unknown error"
-                    Log.e("PdfUploadViewModel", "Error uploading PDF '${pdfFile.name}': ${result.code()} - $errorBody")
-                    uiState = UploadUiState.Error("Error: $errorBody")
+                    if (result.code() == 400) {
+                        // Handle Bad Request (400) error
+                        Log.e("PdfUploadViewModel", "Bad Request (400) when uploading PDF '${pdfFile.name}'")
+                        val errorBody = result.errorBody()?.string() ?: "Bad Request - The server could not process the PDF upload."
+                        uiState = UploadUiState.Error("Error: $errorBody")
+                    } else {
+                        val errorBody = result.errorBody()?.string() ?: "Unknown error"
+                        Log.e("PdfUploadViewModel", "Error uploading PDF '${pdfFile.name}': ${result.code()} - $errorBody")
+                        uiState = UploadUiState.Error("Error: $errorBody")
+                    }
                 }
             } catch (e: Exception) {
                 Log.e("PdfUploadViewModel", "Exception in onPdfUploadButtonPress for '${pdfFile.name}'", e)
+
                 uiState = UploadUiState.Error("Exception: ${e.localizedMessage ?: "Unknown error"}")
             }
         }
     }
+
 
     fun onNavigated() {
         navigateToTopicId = null

@@ -4,6 +4,7 @@ import com.sugardevs.flashcards.data.local.dao.ExamDao
 import com.sugardevs.flashcards.data.local.model.ExamEntity
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
+import com.sugardevs.flashcards.data.network.model.ExamQuestionDto
 
 class ExamRepository @Inject constructor(private val dao: ExamDao) {
 
@@ -11,9 +12,18 @@ class ExamRepository @Inject constructor(private val dao: ExamDao) {
         dao.insertQuestion(examEntity)
     }
 
-    suspend fun insertQuestions(questions: List<ExamEntity>) {
-        dao.insertQuestions(questions)
+    suspend fun insertQuestionsFromDto(topicId: String, questions: List<ExamQuestionDto>) {
+        val examEntities = questions.map { dto ->
+            ExamEntity(
+                topicId = topicId,
+                question = dto.question,
+                options = dto.options,
+                answer = dto.answer
+            )
+        }
+        dao.insertQuestions(examEntities)
     }
+
 
     fun getQuestionsByTopicId(topicId: String): Flow<List<ExamEntity>> {
         return dao.getQuestionsByTopicId(topicId)

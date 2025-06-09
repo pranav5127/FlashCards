@@ -45,20 +45,7 @@ class ExamScreenViewModel @Inject constructor(
         }
     }
 
-    fun insertQuestions(questions: List<ExamEntity>) {
-        viewModelScope.launch {
-            try {
-                _isLoading.value = true
-                examRepository.insertQuestions(questions)
-                _isLoading.value = false
-            } catch (e: Exception) {
-                _isLoading.value = false
-                _errorMessage.value = "Error inserting questions: ${e.message}"
-            }
-        }
-    }
-
-    fun loadQuestionsByTopicId(topicId: String) {
+       fun loadQuestionsByTopicId(topicId: String) {
         viewModelScope.launch {
             _isLoading.value = true
             examRepository.getQuestionsByTopicId(topicId)
