@@ -24,6 +24,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -88,7 +89,7 @@ fun ExamQuestions(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                text = "Question ${currentQuestionIndex + 1} of ${questions.size}",
+                text = "Question ${examEntity.questionId} of ${questions.size} ",
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Medium,
                 color = MaterialTheme.colorScheme.primary
@@ -175,6 +176,7 @@ fun ExamQuestions(
                 } else {
                     IconButton(onClick = {
                         println("Exam Submitted. Answers: $selectedAnswers")
+                        viewModel.showScore(selectedAnswers, examEntity.topicId)
                         onSubmitExam()
                     }) {
                         Icon(

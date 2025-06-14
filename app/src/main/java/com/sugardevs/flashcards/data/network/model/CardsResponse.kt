@@ -11,6 +11,7 @@ data class CardsResponse(
 
 @Serializable
 data class ExamQuestionDto(
+    val questionId: Int,
     val question: String,
     val options: List<String>,
     val answer: String

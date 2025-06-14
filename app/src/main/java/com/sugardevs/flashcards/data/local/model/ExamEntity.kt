@@ -20,6 +20,7 @@ import androidx.room.PrimaryKey
 data class ExamEntity (
    @PrimaryKey(autoGenerate = true) val id: Int = 0,
    val topicId: String,
+   val questionId: Int,
    val question: String,
    val options: List<String>,
    val answer: String,

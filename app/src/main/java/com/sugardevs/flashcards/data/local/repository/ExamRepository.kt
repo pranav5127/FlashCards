@@ -16,6 +16,7 @@ class ExamRepository @Inject constructor(private val dao: ExamDao) {
         val examEntities = questions.map { dto ->
             ExamEntity(
                 topicId = topicId,
+                questionId = dto.questionId,
                 question = dto.question,
                 options = dto.options,
                 answer = dto.answer

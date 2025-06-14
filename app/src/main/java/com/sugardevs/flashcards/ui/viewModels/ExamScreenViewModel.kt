@@ -1,5 +1,6 @@
 package com.sugardevs.flashcards.ui.viewModels
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sugardevs.flashcards.data.local.model.ExamEntity
@@ -9,6 +10,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -32,6 +34,40 @@ class ExamScreenViewModel @Inject constructor(
     private val _errorMessage = MutableStateFlow<String?>(null)
     val errorMessage: StateFlow<String?> = _errorMessage.asStateFlow()
 
+    // ✅ Fixed: use Map to store score per topic
+    private val _scores = MutableStateFlow<Map<String, Int>>(emptyMap())
+    val scores: StateFlow<Map<String, Int>> = _scores.asStateFlow()
+
+    /**
+     * Calculate score for the given topic and selected answers.
+     * Updates only the score for this topic in the map.
+     */
+    fun showScore(selectedAnswers: Map<Int, String>, topicId: String) {
+        viewModelScope.launch {
+            try {
+                val questions = examRepository.getQuestionsByTopicId(topicId).first()
+                val questionsMap = questions.associateBy { it.questionId }
+
+                var newScore = 0
+                selectedAnswers.forEach { (questionId, selectedAnswer) ->
+                    val correctAnswer = questionsMap[questionId]?.answer
+                    if (selectedAnswer == correctAnswer) {
+                        newScore += 1
+                    }
+                }
+
+                _scores.value = _scores.value.toMutableMap().apply {
+                    this[topicId] = newScore
+                }
+
+                Log.d("SCORE", "Calculated score for topic $topicId: $newScore")
+            } catch (e: Exception) {
+                Log.e("SCORE", "Error calculating score for topic $topicId: ${e.message}")
+                _errorMessage.value = "Error calculating score: ${e.message}"
+            }
+        }
+    }
+
     fun insertQuestion(examEntity: ExamEntity) {
         viewModelScope.launch {
             try {
@@ -45,7 +81,7 @@ class ExamScreenViewModel @Inject constructor(
         }
     }
 
-       fun loadQuestionsByTopicId(topicId: String) {
+    fun loadQuestionsByTopicId(topicId: String) {
         viewModelScope.launch {
             _isLoading.value = true
             examRepository.getQuestionsByTopicId(topicId)
