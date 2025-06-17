@@ -1,45 +1,26 @@
 package com.sugardevs.flashcards.ui.components
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateMapOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.ArrowCircleLeft
+import androidx.compose.material.icons.outlined.ArrowCircleRight
+import androidx.compose.material.icons.outlined.CheckCircleOutline
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.sugardevs.flashcards.R
 import com.sugardevs.flashcards.ui.viewModels.ExamScreenViewModel
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ExamQuestions(
     modifier: Modifier = Modifier,
@@ -50,6 +31,8 @@ fun ExamQuestions(
     val questions by viewModel.questionsByTopic.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
     val errorMessage by viewModel.errorMessage.collectAsState()
+    val showDialog = viewModel.showDialog
+    val finalScoreText = viewModel.finalScoreText
 
     var currentQuestionIndex by remember { mutableIntStateOf(0) }
     var selectedAnswers by remember { mutableStateOf(mapOf<Int, String>()) }
@@ -89,7 +72,7 @@ fun ExamQuestions(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                text = "Question ${examEntity.questionId} of ${questions.size} ",
+                text = "Question ${currentQuestionIndex + 1} of ${questions.size}",
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Medium,
                 color = MaterialTheme.colorScheme.primary
@@ -131,9 +114,9 @@ fun ExamQuestions(
                     examEntity.options.forEach { option ->
                         OptionItem(
                             optionText = option,
-                            isSelected = selectedAnswers[examEntity.id] == option,
+                            isSelected = selectedAnswers[examEntity.questionId] == option,
                             onOptionSelected = {
-                                selectedAnswers = selectedAnswers + (examEntity.id to option)
+                                selectedAnswers = selectedAnswers + (examEntity.questionId to option)
                             }
                         )
                     }
@@ -157,7 +140,7 @@ fun ExamQuestions(
                     enabled = currentQuestionIndex > 0
                 ) {
                     Icon(
-                        painter = painterResource(R.drawable.outline_arrow_circle_left_24),
+                        imageVector = Icons.Outlined.ArrowCircleLeft,
                         contentDescription = "Previous",
                         modifier = Modifier.size(64.dp)
                     )
@@ -168,19 +151,17 @@ fun ExamQuestions(
                         currentQuestionIndex++
                     }) {
                         Icon(
-                            painter = painterResource(R.drawable.outline_arrow_circle_right_24),
+                            imageVector = Icons.Outlined.ArrowCircleRight,
                             contentDescription = "Next",
                             modifier = Modifier.size(64.dp)
                         )
                     }
                 } else {
                     IconButton(onClick = {
-                        println("Exam Submitted. Answers: $selectedAnswers")
-                        viewModel.showScore(selectedAnswers, examEntity.topicId)
-                        onSubmitExam()
+                        viewModel.submitExam(selectedAnswers, examEntity.topicId)
                     }) {
                         Icon(
-                            painter = painterResource(R.drawable.baseline_check_circle_outline_24),
+                            imageVector = Icons.Outlined.CheckCircleOutline,
                             contentDescription = "Submit",
                             modifier = Modifier.size(64.dp),
                             tint = MaterialTheme.colorScheme.primary
@@ -190,6 +171,16 @@ fun ExamQuestions(
             }
         }
     }
+
+    if (showDialog) {
+        ShowDialog(
+            onConfirmation = {
+                viewModel.dismissDialog()
+                onSubmitExam()
+            },
+            dialogText = finalScoreText
+        )
+    }
 }
 
 @Composable
@@ -198,22 +189,46 @@ fun OptionItem(
     isSelected: Boolean,
     onOptionSelected: () -> Unit
 ) {
-    Surface(
-        shape = RoundedCornerShape(12.dp),
-        color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.primaryContainer,
-        tonalElevation = 2.dp,
+    Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(onClick = onOptionSelected)
+            .clickable { onOptionSelected() }
+            .background(
+                color = if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
+                else MaterialTheme.colorScheme.surface,
+                shape = RoundedCornerShape(50)
+            )
+            .padding(horizontal = 16.dp, vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically
     ) {
+        RadioButton(
+            selected = isSelected,
+            onClick = null,
+            colors = RadioButtonDefaults.colors(
+                selectedColor = MaterialTheme.colorScheme.primary
+            )
+        )
+        Spacer(modifier = Modifier.width(12.dp))
         Text(
             text = optionText,
-            modifier = Modifier
-                .padding(vertical = 12.dp, horizontal = 16.dp),
-            style = MaterialTheme.typography.bodyLarge.copy(
-                fontWeight = FontWeight.SemiBold
-            ),
-            color = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onPrimaryContainer
+            fontSize = 18.sp
         )
     }
+}
+
+@Composable
+fun ShowDialog(
+    onConfirmation: () -> Unit,
+    dialogText: String
+) {
+    AlertDialog(
+        onDismissRequest = { onConfirmation() },
+        title = { Text(text = "Exam Score") },
+        text = { Text(text = dialogText) },
+        confirmButton = {
+            TextButton(onClick = { onConfirmation() }) {
+                Text("OK")
+            }
+        }
+    )
 }

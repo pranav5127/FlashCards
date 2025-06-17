@@ -15,4 +15,5 @@
     <string name="exam_screen">Exam Screen\n</string>
     <string name="upload_pdf">Upload Pdf</string>
     <string name="send">Send</string>
+    <string name="score">Score</string>
 </resources>
