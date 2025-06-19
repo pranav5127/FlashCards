@@ -32,6 +32,7 @@ import com.sugardevs.flashcards.ui.screens.ExamGridScreen
 import com.sugardevs.flashcards.ui.screens.ExamScreen
 import com.sugardevs.flashcards.ui.screens.HomeScreen
 import com.sugardevs.flashcards.ui.screens.PdfUploadScreen
+import com.sugardevs.flashcards.ui.screens.ProfileScreen
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -57,6 +58,9 @@ object CardGrid
 
 @Serializable
 object ExamGrid
+
+@Serializable
+object Profile
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -120,7 +124,9 @@ fun MainAppNavigation() {
                         showBackButton = navController.previousBackStackEntry != null,
                         onBackClick = { navController.popBackStack() },
                         modifier = Modifier,
-                        onProfileClick = {}
+                        onProfileClick = {
+                            navController.navigate(Profile)
+                        }
                     )
                 }
             }
@@ -252,6 +258,10 @@ fun AppNavHost(navController: NavHostController, modifier: Modifier = Modifier) 
                     )
                 }
             )
+        }
+
+        composable<Profile> {
+            ProfileScreen()
         }
     }
 }
