@@ -6,6 +6,8 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.text.input.TextFieldState
+import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
@@ -22,6 +24,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import com.sugardevs.flashcards.ui.components.BottomBar
 import com.sugardevs.flashcards.ui.components.ExamQuestions
+import com.sugardevs.flashcards.ui.components.SearchBar
 import com.sugardevs.flashcards.ui.components.TopBar
 import com.sugardevs.flashcards.ui.screens.CardScreen
 import com.sugardevs.flashcards.ui.screens.CardsGridScreen
@@ -66,9 +69,17 @@ fun MainAppNavigation() {
     val currentArgs = navBackStackEntry?.arguments
 
     val displayTopicId = when {
-        currentRouteString?.startsWith(Cards::class.qualifiedName!!) == true -> currentArgs?.getString("topicId")
-        currentRouteString?.startsWith(Exam::class.qualifiedName!!) == true -> currentArgs?.getString("subject") // Assuming 'subject' in Exam route is the ID
-        currentRouteString?.startsWith(Question::class.qualifiedName!!) == true -> currentArgs?.getString("topicId")
+        currentRouteString?.startsWith(Cards::class.qualifiedName!!) == true -> currentArgs?.getString(
+            "topicId"
+        )
+
+        currentRouteString?.startsWith(Exam::class.qualifiedName!!) == true -> currentArgs?.getString(
+            "subject"
+        )
+        currentRouteString?.startsWith(Question::class.qualifiedName!!) == true -> currentArgs?.getString(
+            "topicId"
+        )
+
         else -> null
     }
 
@@ -81,23 +92,38 @@ fun MainAppNavigation() {
     val topBarTitle = when {
         currentRouteString == Home::class.qualifiedName -> "Home"
         currentRouteString?.startsWith(Cards::class.qualifiedName!!) == true -> "Flash Cards: $lastTopicId"
-        currentRouteString?.startsWith(Exam::class.qualifiedName!!) == true -> "Exam: $lastTopicId" // Updated to show topic
-        currentRouteString?.startsWith(Question::class.qualifiedName!!) == true -> "Question: $lastTopicId" // Updated to show topic
+        currentRouteString?.startsWith(Exam::class.qualifiedName!!) == true -> "Exam"
+        currentRouteString?.startsWith(Question::class.qualifiedName!!) == true -> "Question: $lastTopicId"
         currentRouteString == PdfUpload::class.qualifiedName -> "Upload PDF"
         currentRouteString == CardGrid::class.qualifiedName -> "Card Topics"
         currentRouteString == ExamGrid::class.qualifiedName -> "Exam Topics"
         else -> "Flashcards App"
     }
 
+    var textFieldState: TextFieldState = rememberTextFieldState()
+    fun onSearch(search: String): String {
+        return search
+    }
     Scaffold(topBar = {
-        if (currentRouteString != null) {
-            TopBar(
-                title = topBarTitle,
-                showBackButton = navController.previousBackStackEntry != null,
-                onBackClick = { navController.popBackStack() },
-                modifier = Modifier,
-                onProfileClick = {}
-            )
+        when {
+            currentRouteString != null -> {
+                if (topBarTitle == "Card Topics" || topBarTitle == "Exam") {
+                      SearchBar(
+                          textFieldState = textFieldState,
+                          onSearch = { search -> onSearch(search) },
+                          searchResults = listOf("Item 1", "Item 2", "Item 3")
+                      )
+
+                } else {
+                    TopBar(
+                        title = topBarTitle,
+                        showBackButton = navController.previousBackStackEntry != null,
+                        onBackClick = { navController.popBackStack() },
+                        modifier = Modifier,
+                        onProfileClick = {}
+                    )
+                }
+            }
         }
     }, bottomBar = {
         val isTopLevel = when (currentRouteString) {
@@ -107,6 +133,7 @@ fun MainAppNavigation() {
             Exam::class.qualifiedName,
             CardGrid::class.qualifiedName,
             ExamGrid::class.qualifiedName -> true
+
             else -> {
                 currentRouteString?.startsWith(Cards::class.qualifiedName!!) == true ||
                         currentRouteString?.startsWith(Exam::class.qualifiedName!!) == true
@@ -173,7 +200,8 @@ fun AppNavHost(navController: NavHostController, modifier: Modifier = Modifier) 
         },
         popExitTransition = {
             slideOutHorizontally(
-                targetOffsetX = { fullWidth -> fullWidth }, animationSpec = tween(durationMillis = 300)
+                targetOffsetX = { fullWidth -> fullWidth },
+                animationSpec = tween(durationMillis = 300)
             ) + fadeOut(animationSpec = tween(durationMillis = 300))
         }
     ) {

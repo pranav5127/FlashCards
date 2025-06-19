@@ -7,6 +7,7 @@ data class CardsResponse(
     val topic: String,
     val points: List<String>,
     val questions: List<ExamQuestionDto>,
+    val code: Int
 )
 
 @Serializable
