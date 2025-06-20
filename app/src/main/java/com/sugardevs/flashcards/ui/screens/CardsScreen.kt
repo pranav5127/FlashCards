@@ -39,7 +39,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.sugardevs.flashcards.R
 import com.sugardevs.flashcards.ui.components.FlashCard
 import com.sugardevs.flashcards.ui.viewModels.CardsScreenViewModel
-import com.sugardevs.flashcards.utils.SortMode
 
 @Composable
 fun CardScreen(

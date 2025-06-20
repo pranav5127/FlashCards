@@ -19,10 +19,15 @@ class CardsScreenViewModel @Inject constructor(
     private val _cardsUiState = MutableStateFlow(CardsUiState())
     val cardsUiState: StateFlow<CardsUiState> = _cardsUiState.asStateFlow()
 
+    private var currentTopicId: String? = null
+
+    private val _topicSearchResults = MutableStateFlow<List<String>>(emptyList())
+    val topicSearchResults: StateFlow<List<String>> = _topicSearchResults.asStateFlow()
+
     fun loadCards(topicId: String) {
+        currentTopicId = topicId
         viewModelScope.launch {
             _cardsUiState.value = _cardsUiState.value.copy(isLoading = true)
-
             try {
                 val fetchedCards = repository.getCardsByTopicId(topicId)
                 _cardsUiState.value = CardsUiState(
@@ -55,6 +60,12 @@ class CardsScreenViewModel @Inject constructor(
             if (it.currentCardIndex > 0) {
                 it.copy(currentCardIndex = it.currentCardIndex - 1)
             } else it
+        }
+    }
+
+    fun searchTopics(query: String) {
+        viewModelScope.launch {
+            _topicSearchResults.value = repository.searchTopics(query)
         }
     }
 }

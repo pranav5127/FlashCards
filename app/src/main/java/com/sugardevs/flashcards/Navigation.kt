@@ -11,11 +11,14 @@ import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -33,6 +36,7 @@ import com.sugardevs.flashcards.ui.screens.ExamScreen
 import com.sugardevs.flashcards.ui.screens.HomeScreen
 import com.sugardevs.flashcards.ui.screens.PdfUploadScreen
 import com.sugardevs.flashcards.ui.screens.ProfileScreen
+import com.sugardevs.flashcards.ui.viewModels.CardsScreenViewModel
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -73,16 +77,14 @@ fun MainAppNavigation() {
     val currentArgs = navBackStackEntry?.arguments
 
     val displayTopicId = when {
-        currentRouteString?.startsWith(Cards::class.qualifiedName!!) == true -> currentArgs?.getString(
-            "topicId"
-        )
+        currentRouteString?.startsWith(Cards::class.qualifiedName!!) == true ->
+            currentArgs?.getString("topicId")
 
-        currentRouteString?.startsWith(Exam::class.qualifiedName!!) == true -> currentArgs?.getString(
-            "subject"
-        )
-        currentRouteString?.startsWith(Question::class.qualifiedName!!) == true -> currentArgs?.getString(
-            "topicId"
-        )
+        currentRouteString?.startsWith(Exam::class.qualifiedName!!) == true ->
+            currentArgs?.getString("subject")
+
+        currentRouteString?.startsWith(Question::class.qualifiedName!!) == true ->
+            currentArgs?.getString("topicId")
 
         else -> null
     }
@@ -91,7 +93,6 @@ fun MainAppNavigation() {
     if (!displayTopicId.isNullOrBlank()) {
         lastTopicId = displayTopicId
     }
-
 
     val topBarTitle = when {
         currentRouteString == Home::class.qualifiedName -> "Home"
@@ -104,84 +105,121 @@ fun MainAppNavigation() {
         else -> "Flashcards App"
     }
 
-    var textFieldState: TextFieldState = rememberTextFieldState()
-    fun onSearch(search: String): String {
-        return search
+    val textFieldState: TextFieldState = rememberTextFieldState()
+
+    val cardsViewModel: CardsScreenViewModel = hiltViewModel()
+    val topicSearchResults by cardsViewModel.topicSearchResults.collectAsState()
+
+    val searchQuery = textFieldState.text.toString()
+    LaunchedEffect(searchQuery) {
+        cardsViewModel.searchTopics(searchQuery)
     }
-    Scaffold(topBar = {
-        when {
-            currentRouteString != null -> {
-                if (topBarTitle == "Card Topics" || topBarTitle == "Exam") {
-                      SearchBar(
-                          textFieldState = textFieldState,
-                          onSearch = { search -> onSearch(search) },
-                          searchResults = listOf("Item 1", "Item 2", "Item 3")
-                      )
 
-                } else {
-                    TopBar(
-                        title = topBarTitle,
-                        showBackButton = navController.previousBackStackEntry != null,
-                        onBackClick = { navController.popBackStack() },
-                        modifier = Modifier,
-                        onProfileClick = {
-                            navController.navigate(Profile)
+    Scaffold(
+        topBar = {
+            when {
+                currentRouteString != null -> {
+                    when (topBarTitle) {
+                        "Card Topics" -> {
+                            SearchBar(
+                                textFieldState = textFieldState,
+                                onSearch = { cardsViewModel.searchTopics(searchQuery) },
+                                searchResults = topicSearchResults,
+                                onResultClick = { selectedTopicId ->
+                                    navController.navigate(Cards(topicId = selectedTopicId))
+                                }
+
+                            )
                         }
-                    )
+
+                        "Exam" -> {
+                            SearchBar(
+                                textFieldState = textFieldState,
+                                onSearch = { },
+                                searchResults = topicSearchResults,
+                                onResultClick = { selectedTopicId ->
+                                    navController.navigate(Question(topicId = selectedTopicId))
+                                }
+
+                            )
+                        }
+
+                        else -> {
+                            TopBar(
+                                title = topBarTitle,
+                                showBackButton = navController.previousBackStackEntry != null,
+                                onBackClick = { navController.popBackStack() },
+                                modifier = Modifier,
+                                onProfileClick = {
+                                    navController.navigate(Profile)
+                                }
+                            )
+                        }
+                    }
                 }
             }
-        }
-    }, bottomBar = {
-        val isTopLevel = when (currentRouteString) {
-            Home::class.qualifiedName,
-            Cards::class.qualifiedName,
-            PdfUpload::class.qualifiedName,
-            Exam::class.qualifiedName,
-            CardGrid::class.qualifiedName,
-            ExamGrid::class.qualifiedName -> true
+        },
+        bottomBar = {
+            val isTopLevel = when (currentRouteString) {
+                Home::class.qualifiedName,
+                Cards::class.qualifiedName,
+                PdfUpload::class.qualifiedName,
+                Exam::class.qualifiedName,
+                CardGrid::class.qualifiedName,
+                ExamGrid::class.qualifiedName -> true
 
-            else -> {
-                currentRouteString?.startsWith(Cards::class.qualifiedName!!) == true ||
-                        currentRouteString?.startsWith(Exam::class.qualifiedName!!) == true
+                else -> {
+                    currentRouteString?.startsWith(Cards::class.qualifiedName!!) == true ||
+                            currentRouteString?.startsWith(Exam::class.qualifiedName!!) == true
+                }
+            }
+
+            if (isTopLevel) {
+                BottomBar(
+                    onHomeClick = {
+                        navController.navigate(Home) {
+                            popUpTo(navController.graph.startDestinationId) { saveState = true }
+                            launchSingleTop = true
+                            restoreState = true
+                        }
+                    },
+                    onFlashCardsClick = {
+                        navController.navigate(CardGrid) {
+                            popUpTo(navController.graph.startDestinationId) { saveState = true }
+                            launchSingleTop = true
+                            restoreState = true
+                        }
+                    },
+                    onUploadPdfClick = {
+                        navController.navigate(PdfUpload) {
+                            popUpTo(navController.graph.startDestinationId) { saveState = true }
+                            launchSingleTop = true
+                            restoreState = true
+                        }
+                    },
+                    onExamClick = {
+                        navController.navigate(ExamGrid) {
+                            popUpTo(navController.graph.startDestinationId) { saveState = true }
+                            launchSingleTop = true
+                            restoreState = true
+                        }
+                    }
+                )
             }
         }
-
-        if (isTopLevel) {
-            BottomBar(onHomeClick = {
-                navController.navigate(Home) {
-                    popUpTo(navController.graph.startDestinationId) { saveState = true }
-                    launchSingleTop = true
-                    restoreState = true
-                }
-            }, onFlashCardsClick = {
-                navController.navigate(CardGrid) { // Navigates to grid to select a topic first
-                    popUpTo(navController.graph.startDestinationId) { saveState = true }
-                    launchSingleTop = true
-                    restoreState = true
-                }
-            }, onUploadPdfClick = {
-                navController.navigate(PdfUpload) {
-                    popUpTo(navController.graph.startDestinationId) { saveState = true }
-                    launchSingleTop = true
-                    restoreState = true
-                }
-            }, onExamClick = {
-                navController.navigate(ExamGrid) {
-                    popUpTo(navController.graph.startDestinationId) { saveState = true }
-                    launchSingleTop = true
-                    restoreState = true
-                }
-            })
-        }
-    }) { innerPadding ->
+    ) { innerPadding ->
         AppNavHost(
-            navController = navController, modifier = Modifier.padding(innerPadding)
+            navController = navController,
+            modifier = Modifier.padding(innerPadding),
         )
     }
 }
 
 @Composable
-fun AppNavHost(navController: NavHostController, modifier: Modifier = Modifier) {
+fun AppNavHost(
+    navController: NavHostController,
+    modifier: Modifier = Modifier,
+) {
     NavHost(
         navController = navController,
         startDestination = Home,
@@ -244,7 +282,7 @@ fun AppNavHost(navController: NavHostController, modifier: Modifier = Modifier) 
             CardsGridScreen(
                 onCardsClick = { topicId ->
                     navController.navigate(Cards(topicId = topicId))
-                }
+                },
             )
         }
         composable<ExamGrid> {
@@ -259,7 +297,6 @@ fun AppNavHost(navController: NavHostController, modifier: Modifier = Modifier) 
                 }
             )
         }
-
         composable<Profile> {
             ProfileScreen()
         }

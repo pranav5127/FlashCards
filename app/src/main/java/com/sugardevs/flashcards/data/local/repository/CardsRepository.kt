@@ -20,15 +20,19 @@ class CardsRepository @Inject constructor(private val dao: CardDao) {
         }
     }
 
+
+    suspend fun searchTopics(query: String): List<String> {
+        return dao.searchTopics(query)
+    }
+
     suspend fun saveCards(topicId: String, points: List<String>) {
         val cardEntities = points.map { point ->
             CardEntity(topicId = topicId, content = point)
         }
         dao.upsertCards(cardEntities)
-
     }
+
     suspend fun deleteCardsByTopicId(topicId: String) {
         dao.deleteCardsByTopicId(topicId)
     }
-
 }
