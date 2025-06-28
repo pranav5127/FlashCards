@@ -32,7 +32,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
-import com.sugardevs.flashcards.Cards
+import com.sugardevs.flashcards.navigation.Cards
 import com.sugardevs.flashcards.R
 import com.sugardevs.flashcards.ui.viewModels.PdfUploadScreenViewModel
 import com.sugardevs.flashcards.utils.FileUtils.copyPdfToCache

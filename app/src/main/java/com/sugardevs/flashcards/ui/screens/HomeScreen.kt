@@ -15,7 +15,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
-import com.sugardevs.flashcards.Cards
+import com.sugardevs.flashcards.navigation.Cards
 import com.sugardevs.flashcards.ui.components.FlashCardTopic
 import com.sugardevs.flashcards.ui.theme.FlashCardsTheme
 import com.sugardevs.flashcards.ui.viewModels.HomeScreenViewModel
