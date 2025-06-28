@@ -10,13 +10,7 @@ import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
@@ -25,17 +19,8 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
-import com.sugardevs.flashcards.ui.components.BottomBar
-import com.sugardevs.flashcards.ui.components.ExamQuestions
-import com.sugardevs.flashcards.ui.components.SearchBar
-import com.sugardevs.flashcards.ui.components.TopBar
-import com.sugardevs.flashcards.ui.screens.CardScreen
-import com.sugardevs.flashcards.ui.screens.CardsGridScreen
-import com.sugardevs.flashcards.ui.screens.ExamGridScreen
-import com.sugardevs.flashcards.ui.screens.ExamScreen
-import com.sugardevs.flashcards.ui.screens.HomeScreen
-import com.sugardevs.flashcards.ui.screens.PdfUploadScreen
-import com.sugardevs.flashcards.ui.screens.ProfileScreen
+import com.sugardevs.flashcards.ui.components.*
+import com.sugardevs.flashcards.ui.screens.*
 import com.sugardevs.flashcards.ui.screens.auth.SignInScreen
 import com.sugardevs.flashcards.ui.screens.auth.SignUpScreen
 import com.sugardevs.flashcards.ui.viewModels.CardsScreenViewModel
@@ -44,31 +29,22 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 object SignUp
-
 @Serializable
 object SignIn
-
 @Serializable
 object Home
-
 @Serializable
 data class Cards(val topicId: String)
-
 @Serializable
 data class Exam(val subject: String, val questionCount: Int)
-
 @Serializable
 object PdfUpload
-
 @Serializable
 data class Question(val topicId: String)
-
 @Serializable
 object CardGrid
-
 @Serializable
 object ExamGrid
-
 @Serializable
 object Profile
 
@@ -78,27 +54,21 @@ fun MainAppNavigation() {
     val navController = rememberNavController()
     val authViewModel: AuthViewModel = hiltViewModel()
     val isLoggedIn by authViewModel.isLoggedIn.collectAsState()
+    val isLoading by authViewModel.isLoading.collectAsState()
 
-    // Ensure session is checked on launch
     LaunchedEffect(Unit) {
         authViewModel.checkAuthStatus()
     }
 
-    // Navigate to Home after login/signup
-    LaunchedEffect(isLoggedIn) {
-        if (isLoggedIn) {
-            navController.navigate(Home) {
-                popUpTo(SignUp) { inclusive = true }
-                launchSingleTop = true
-            }
-        } else {
-            navController.navigate(SignIn) {
-                popUpTo(0) { inclusive = true }
-                launchSingleTop = true
-            }
-        }
-    }
+    if (isLoading) return
 
+    val startDestination = if (isLoggedIn) Home else SignIn
+
+    AppScaffold(navController = navController, startDestination = startDestination)
+}
+
+@Composable
+fun AppScaffold(navController: NavHostController, startDestination: Any) {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
     val currentRouteString = currentDestination?.route
@@ -118,9 +88,7 @@ fun MainAppNavigation() {
     }
 
     var lastTopicId by remember { mutableStateOf("") }
-    if (!displayTopicId.isNullOrBlank()) {
-        lastTopicId = displayTopicId
-    }
+    if (!displayTopicId.isNullOrBlank()) lastTopicId = displayTopicId
 
     val topBarTitle = when {
         currentRouteString == Home::class.qualifiedName -> "Home"
@@ -133,10 +101,14 @@ fun MainAppNavigation() {
         else -> "Flashcards App"
     }
 
+    val isAuthRoute =
+        currentRouteString == SignIn::class.qualifiedName || currentRouteString == SignUp::class.qualifiedName
+
     val textFieldState: TextFieldState = rememberTextFieldState()
     val cardsViewModel: CardsScreenViewModel = hiltViewModel()
     val topicSearchResults by cardsViewModel.topicSearchResults.collectAsState()
     val searchQuery = textFieldState.text.toString()
+
 
     LaunchedEffect(searchQuery) {
         cardsViewModel.searchTopics(searchQuery)
@@ -144,93 +116,77 @@ fun MainAppNavigation() {
 
     Scaffold(
         topBar = {
-            when (topBarTitle) {
-                "Card Topics" -> {
-                    SearchBar(
+            if (!isAuthRoute) {
+                when (topBarTitle) {
+                    "Card Topics" -> SearchBar(
                         textFieldState = textFieldState,
                         onSearch = { cardsViewModel.searchTopics(searchQuery) },
                         searchResults = topicSearchResults,
-                        onResultClick = { selectedTopicId ->
-                            navController.navigate(Cards(topicId = selectedTopicId))
-                        }
+                        onResultClick = { navController.navigate(Cards(topicId = it)) }
                     )
-                }
 
-                "Exam" -> {
-                    SearchBar(
+                    "Exam" -> SearchBar(
                         textFieldState = textFieldState,
-                        onSearch = { },
+                        onSearch = {},
                         searchResults = topicSearchResults,
-                        onResultClick = { selectedTopicId ->
-                            navController.navigate(Question(topicId = selectedTopicId))
-                        }
+                        onResultClick = { navController.navigate(Question(topicId = it)) }
                     )
-                }
 
-                else -> {
-                    TopBar(
+                    else -> TopBar(
                         title = topBarTitle,
                         showBackButton = navController.previousBackStackEntry != null,
                         onBackClick = { navController.popBackStack() },
                         modifier = Modifier,
-                        onProfileClick = {
-                            navController.navigate(Profile)
-                        }
+                        onProfileClick = { navController.navigate(Profile) }
                     )
                 }
-            }
+            } else null
         },
         bottomBar = {
-            val isTopLevel = when (currentRouteString) {
+            val isTopLevel = listOf(
                 Home::class.qualifiedName,
                 Cards::class.qualifiedName,
                 PdfUpload::class.qualifiedName,
                 Exam::class.qualifiedName,
                 CardGrid::class.qualifiedName,
-                ExamGrid::class.qualifiedName -> true
+                ExamGrid::class.qualifiedName
+            ).any { it == currentRouteString || currentRouteString?.startsWith(it!!) == true }
 
-                else -> {
-                    currentRouteString?.startsWith(Cards::class.qualifiedName!!) == true ||
-                            currentRouteString?.startsWith(Exam::class.qualifiedName!!) == true
-                }
-            }
-
-            if (isTopLevel) {
-                BottomBar(
-                    onHomeClick = {
-                        navController.navigate(Home) {
-                            popUpTo(navController.graph.startDestinationId) { saveState = true }
-                            launchSingleTop = true
-                            restoreState = true
-                        }
-                    },
-                    onFlashCardsClick = {
-                        navController.navigate(CardGrid) {
-                            popUpTo(navController.graph.startDestinationId) { saveState = true }
-                            launchSingleTop = true
-                            restoreState = true
-                        }
-                    },
-                    onUploadPdfClick = {
-                        navController.navigate(PdfUpload) {
-                            popUpTo(navController.graph.startDestinationId) { saveState = true }
-                            launchSingleTop = true
-                            restoreState = true
-                        }
-                    },
-                    onExamClick = {
-                        navController.navigate(ExamGrid) {
-                            popUpTo(navController.graph.startDestinationId) { saveState = true }
-                            launchSingleTop = true
-                            restoreState = true
-                        }
+            if (isTopLevel) BottomBar(
+                onHomeClick = {
+                    navController.navigate(Home) {
+                        popUpTo(navController.graph.startDestinationId) { saveState = true }
+                        launchSingleTop = true
+                        restoreState = true
                     }
-                )
-            }
+                },
+                onFlashCardsClick = {
+                    navController.navigate(CardGrid) {
+                        popUpTo(navController.graph.startDestinationId) { saveState = true }
+                        launchSingleTop = true
+                        restoreState = true
+                    }
+                },
+                onUploadPdfClick = {
+                    navController.navigate(PdfUpload) {
+                        popUpTo(navController.graph.startDestinationId) { saveState = true }
+                        launchSingleTop = true
+                        restoreState = true
+                    }
+                },
+                onExamClick = {
+                    navController.navigate(ExamGrid) {
+                        popUpTo(navController.graph.startDestinationId) { saveState = true }
+                        launchSingleTop = true
+                        restoreState = true
+                    }
+                }
+            )
         }
     ) { innerPadding ->
         AppNavHost(
             navController = navController,
+            startDestination = startDestination,
             modifier = Modifier.padding(innerPadding)
         )
     }
@@ -239,28 +195,37 @@ fun MainAppNavigation() {
 @Composable
 fun AppNavHost(
     navController: NavHostController,
+    startDestination: Any,
     modifier: Modifier = Modifier
 ) {
     val authViewModel: AuthViewModel = hiltViewModel()
     NavHost(
         navController = navController,
-        startDestination = SignUp,
+        startDestination = startDestination,
         modifier = modifier,
         enterTransition = {
-            slideInHorizontally(initialOffsetX = { it }, animationSpec = tween(300)) +
-                    fadeIn(animationSpec = tween(300))
+            slideInHorizontally(initialOffsetX = { it }, animationSpec = tween(300)) + fadeIn(
+                tween(
+                    300
+                )
+            )
         },
         exitTransition = {
-            slideOutHorizontally(targetOffsetX = { -it }, animationSpec = tween(300)) +
-                    fadeOut(animationSpec = tween(300))
+            slideOutHorizontally(targetOffsetX = { -it }, animationSpec = tween(300)) + fadeOut(
+                tween(300)
+            )
         },
         popEnterTransition = {
-            slideInHorizontally(initialOffsetX = { -it }, animationSpec = tween(300)) +
-                    fadeIn(animationSpec = tween(300))
+            slideInHorizontally(
+                initialOffsetX = { -it },
+                animationSpec = tween(300)
+            ) + fadeIn(tween(300))
         },
         popExitTransition = {
-            slideOutHorizontally(targetOffsetX = { it }, animationSpec = tween(300)) +
-                    fadeOut(animationSpec = tween(300))
+            slideOutHorizontally(
+                targetOffsetX = { it },
+                animationSpec = tween(300)
+            ) + fadeOut(tween(300))
         }
     ) {
         composable<SignUp> {
@@ -271,12 +236,9 @@ fun AppNavHost(
                         launchSingleTop = true
                     }
                 },
-                onNavigateToSignIn = {
-                    navController.navigate(SignIn)
-                }
+                onNavigateToSignIn = { navController.navigate(SignIn) }
             )
         }
-
         composable<SignIn> {
             SignInScreen(
                 onSignInSuccess = {
@@ -285,17 +247,10 @@ fun AppNavHost(
                         launchSingleTop = true
                     }
                 },
-                onNavigateToSignUp = {
-                    navController.navigate(SignUp)
-                }
-            )
-
-        }
-        composable<Home> {
-            HomeScreen(
-                navController = navController
+                onNavigateToSignUp = { navController.navigate(SignUp) }
             )
         }
+        composable<Home> { HomeScreen(navController = navController) }
         composable<Cards> {
             val args = it.toRoute<Cards>()
             CardScreen(topicId = args.topicId)
@@ -326,9 +281,7 @@ fun AppNavHost(
             ProfileScreen(
                 userName = "User 1",
                 email = "user1@gmail.com",
-                onLogoutPressed = {
-                    authViewModel.logout()
-                }
+                onLogoutPressed = { authViewModel.logout() }
             )
         }
     }

@@ -26,8 +26,9 @@ class AuthRepository {
         supabaseUrl = BuildConfig.SUPABASE_URL,
         supabaseKey = BuildConfig.SUPABASE_KEY
     ) {
-        install(Auth)
-
+        install(Auth) {
+            enableLifecycleCallbacks = true
+        }
 
 
     }
@@ -92,12 +93,10 @@ class AuthRepository {
         }
     }
 
-    fun getSession(): UserSession? {
-        return try {
-            supabase.auth.currentSessionOrNull()
-        } catch (e: Exception) {
-            null
-        }
+    suspend fun getSession(): UserSession? {
+        supabase.auth.loadFromStorage(autoRefresh = true)
+        supabase.auth.awaitInitialization()
+        return supabase.auth.currentSessionOrNull()
     }
 
     suspend fun logout() {

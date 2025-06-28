@@ -7,13 +7,13 @@ import androidx.lifecycle.viewModelScope
 import com.sugardevs.flashcards.data.auth.AuthResponse
 import com.sugardevs.flashcards.data.auth.repository.AuthRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import io.github.jan.supabase.auth.user.UserSession
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import javax.inject.Inject
-import io.github.jan.supabase.auth.user.UserSession
 
 @HiltViewModel
 class AuthViewModel @Inject constructor(
@@ -41,6 +41,9 @@ class AuthViewModel @Inject constructor(
 
     private val _session = MutableStateFlow<UserSession?>(null)
     val session: StateFlow<UserSession?> = _session
+
+    private val _isLoading = MutableStateFlow(true)
+    val isLoading: StateFlow<Boolean> = _isLoading
 
     fun signUp() {
         if (userName.isBlank() || password.isBlank() || confirmPassword.isBlank()) {
@@ -94,7 +97,7 @@ class AuthViewModel @Inject constructor(
             .launchIn(viewModelScope)
     }
 
-    fun logout( onLogOutComplete: (() -> Unit)? = null ) {
+    fun logout(onLogOutComplete: (() -> Unit)? = null) {
         viewModelScope.launch {
             authRepository.logout()
             _isLoggedIn.value = false
@@ -109,9 +112,11 @@ class AuthViewModel @Inject constructor(
 
     fun checkAuthStatus() {
         viewModelScope.launch {
+            _isLoading.value = true
             val session = authRepository.getSession()
             _session.value = session
             _isLoggedIn.value = session != null
+            _isLoading.value = false
         }
     }
 }

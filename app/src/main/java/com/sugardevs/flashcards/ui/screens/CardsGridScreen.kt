@@ -1,6 +1,7 @@
 package com.sugardevs.flashcards.ui.screens
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
@@ -35,6 +36,7 @@ fun CardsGridScreen(
         horizontalArrangement = Arrangement.spacedBy(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp),
         modifier = modifier
+            .padding(horizontal = 16.dp, vertical = 8.dp)
     ) {
         items(uiState.subjects) { subject ->
             val index = uiState.subjects.indexOf(subject)

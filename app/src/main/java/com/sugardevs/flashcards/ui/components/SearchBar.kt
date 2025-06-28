@@ -33,7 +33,7 @@ fun SearchBar(
     SearchBar(
         modifier = modifier
             .fillMaxWidth()
-            .padding(bottom = 16.dp),
+            .padding(start = 8.dp, top = 8.dp, end = 8.dp,bottom = 16.dp),
 
         inputField = {
             SearchBarDefaults.InputField(
