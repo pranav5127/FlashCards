@@ -36,8 +36,17 @@ import com.sugardevs.flashcards.ui.screens.ExamScreen
 import com.sugardevs.flashcards.ui.screens.HomeScreen
 import com.sugardevs.flashcards.ui.screens.PdfUploadScreen
 import com.sugardevs.flashcards.ui.screens.ProfileScreen
+import com.sugardevs.flashcards.ui.screens.auth.SignInScreen
+import com.sugardevs.flashcards.ui.screens.auth.SignUpScreen
 import com.sugardevs.flashcards.ui.viewModels.CardsScreenViewModel
+import com.sugardevs.flashcards.ui.viewModels.auth.AuthViewModel
 import kotlinx.serialization.Serializable
+
+@Serializable
+object SignUp
+
+@Serializable
+object SignIn
 
 @Serializable
 object Home
@@ -46,10 +55,7 @@ object Home
 data class Cards(val topicId: String)
 
 @Serializable
-data class Exam(
-    val subject: String,
-    val questionCount: Int
-)
+data class Exam(val subject: String, val questionCount: Int)
 
 @Serializable
 object PdfUpload
@@ -70,6 +76,28 @@ object Profile
 @Composable
 fun MainAppNavigation() {
     val navController = rememberNavController()
+    val authViewModel: AuthViewModel = hiltViewModel()
+    val isLoggedIn by authViewModel.isLoggedIn.collectAsState()
+
+    // Ensure session is checked on launch
+    LaunchedEffect(Unit) {
+        authViewModel.checkAuthStatus()
+    }
+
+    // Navigate to Home after login/signup
+    LaunchedEffect(isLoggedIn) {
+        if (isLoggedIn) {
+            navController.navigate(Home) {
+                popUpTo(SignUp) { inclusive = true }
+                launchSingleTop = true
+            }
+        } else {
+            navController.navigate(SignIn) {
+                popUpTo(0) { inclusive = true }
+                launchSingleTop = true
+            }
+        }
+    }
 
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
@@ -106,56 +134,49 @@ fun MainAppNavigation() {
     }
 
     val textFieldState: TextFieldState = rememberTextFieldState()
-
     val cardsViewModel: CardsScreenViewModel = hiltViewModel()
     val topicSearchResults by cardsViewModel.topicSearchResults.collectAsState()
-
     val searchQuery = textFieldState.text.toString()
+
     LaunchedEffect(searchQuery) {
         cardsViewModel.searchTopics(searchQuery)
     }
 
     Scaffold(
         topBar = {
-            when {
-                currentRouteString != null -> {
-                    when (topBarTitle) {
-                        "Card Topics" -> {
-                            SearchBar(
-                                textFieldState = textFieldState,
-                                onSearch = { cardsViewModel.searchTopics(searchQuery) },
-                                searchResults = topicSearchResults,
-                                onResultClick = { selectedTopicId ->
-                                    navController.navigate(Cards(topicId = selectedTopicId))
-                                }
-
-                            )
+            when (topBarTitle) {
+                "Card Topics" -> {
+                    SearchBar(
+                        textFieldState = textFieldState,
+                        onSearch = { cardsViewModel.searchTopics(searchQuery) },
+                        searchResults = topicSearchResults,
+                        onResultClick = { selectedTopicId ->
+                            navController.navigate(Cards(topicId = selectedTopicId))
                         }
+                    )
+                }
 
-                        "Exam" -> {
-                            SearchBar(
-                                textFieldState = textFieldState,
-                                onSearch = { },
-                                searchResults = topicSearchResults,
-                                onResultClick = { selectedTopicId ->
-                                    navController.navigate(Question(topicId = selectedTopicId))
-                                }
-
-                            )
+                "Exam" -> {
+                    SearchBar(
+                        textFieldState = textFieldState,
+                        onSearch = { },
+                        searchResults = topicSearchResults,
+                        onResultClick = { selectedTopicId ->
+                            navController.navigate(Question(topicId = selectedTopicId))
                         }
+                    )
+                }
 
-                        else -> {
-                            TopBar(
-                                title = topBarTitle,
-                                showBackButton = navController.previousBackStackEntry != null,
-                                onBackClick = { navController.popBackStack() },
-                                modifier = Modifier,
-                                onProfileClick = {
-                                    navController.navigate(Profile)
-                                }
-                            )
+                else -> {
+                    TopBar(
+                        title = topBarTitle,
+                        showBackButton = navController.previousBackStackEntry != null,
+                        onBackClick = { navController.popBackStack() },
+                        modifier = Modifier,
+                        onProfileClick = {
+                            navController.navigate(Profile)
                         }
-                    }
+                    )
                 }
             }
         },
@@ -210,7 +231,7 @@ fun MainAppNavigation() {
     ) { innerPadding ->
         AppNavHost(
             navController = navController,
-            modifier = Modifier.padding(innerPadding),
+            modifier = Modifier.padding(innerPadding)
         )
     }
 }
@@ -218,87 +239,97 @@ fun MainAppNavigation() {
 @Composable
 fun AppNavHost(
     navController: NavHostController,
-    modifier: Modifier = Modifier,
+    modifier: Modifier = Modifier
 ) {
+    val authViewModel: AuthViewModel = hiltViewModel()
     NavHost(
         navController = navController,
-        startDestination = Home,
+        startDestination = SignUp,
         modifier = modifier,
         enterTransition = {
-            slideInHorizontally(
-                initialOffsetX = { fullWidth -> fullWidth },
-                animationSpec = tween(durationMillis = 300)
-            ) + fadeIn(animationSpec = tween(durationMillis = 300))
+            slideInHorizontally(initialOffsetX = { it }, animationSpec = tween(300)) +
+                    fadeIn(animationSpec = tween(300))
         },
         exitTransition = {
-            slideOutHorizontally(
-                targetOffsetX = { fullWidth -> -fullWidth },
-                animationSpec = tween(durationMillis = 300)
-            ) + fadeOut(animationSpec = tween(durationMillis = 300))
+            slideOutHorizontally(targetOffsetX = { -it }, animationSpec = tween(300)) +
+                    fadeOut(animationSpec = tween(300))
         },
         popEnterTransition = {
-            slideInHorizontally(
-                initialOffsetX = { fullWidth -> -fullWidth },
-                animationSpec = tween(durationMillis = 300)
-            ) + fadeIn(animationSpec = tween(durationMillis = 300))
+            slideInHorizontally(initialOffsetX = { -it }, animationSpec = tween(300)) +
+                    fadeIn(animationSpec = tween(300))
         },
         popExitTransition = {
-            slideOutHorizontally(
-                targetOffsetX = { fullWidth -> fullWidth },
-                animationSpec = tween(durationMillis = 300)
-            ) + fadeOut(animationSpec = tween(durationMillis = 300))
+            slideOutHorizontally(targetOffsetX = { it }, animationSpec = tween(300)) +
+                    fadeOut(animationSpec = tween(300))
         }
     ) {
-        composable<Home> {
-            HomeScreen(navController = navController)
+        composable<SignUp> {
+            SignUpScreen(
+                onSignUpSuccess = {
+                    navController.navigate(Home) {
+                        popUpTo(SignUp) { inclusive = true }
+                        launchSingleTop = true
+                    }
+                },
+                onNavigateToSignIn = {
+                    navController.navigate(SignIn)
+                }
+            )
         }
-        composable<Cards> { backStackEntry ->
-            val args = backStackEntry.toRoute<Cards>()
+
+        composable<SignIn> {
+            SignInScreen(
+                onSignInSuccess = {
+                    navController.navigate(Home) {
+                        popUpTo(SignIn) { inclusive = true }
+                        launchSingleTop = true
+                    }
+                },
+                onNavigateToSignUp = {
+                    navController.navigate(SignUp)
+                }
+            )
+
+        }
+        composable<Home> {
+            HomeScreen(
+                navController = navController
+            )
+        }
+        composable<Cards> {
+            val args = it.toRoute<Cards>()
             CardScreen(topicId = args.topicId)
         }
-        composable<Exam> { backStackEntry ->
-            val args = backStackEntry.toRoute<Exam>()
+        composable<Exam> {
+            val args = it.toRoute<Exam>()
             ExamScreen(
                 subject = args.subject,
                 questionCount = args.questionCount,
-                onExamCardClick = { actualTopicId ->
-                    navController.navigate(Question(topicId = actualTopicId))
-                }
+                onExamCardClick = { navController.navigate(Question(it)) }
             )
         }
-        composable<Question> { backStackEntry ->
-            val args = backStackEntry.toRoute<Question>()
+        composable<Question> {
+            val args = it.toRoute<Question>()
             ExamQuestions(
                 topicId = args.topicId,
-                onSubmitExam = {
-                    navController.popBackStack()
-                }
+                onSubmitExam = { navController.popBackStack() }
             )
         }
-        composable<PdfUpload> {
-            PdfUploadScreen(navController = navController)
-        }
-        composable<CardGrid> {
-            CardsGridScreen(
-                onCardsClick = { topicId ->
-                    navController.navigate(Cards(topicId = topicId))
-                },
-            )
-        }
+        composable<PdfUpload> { PdfUploadScreen(navController) }
+        composable<CardGrid> { CardsGridScreen { navController.navigate(Cards(it)) } }
         composable<ExamGrid> {
-            ExamGridScreen(
-                onExamClick = { topicId ->
-                    navController.navigate(
-                        Exam(
-                            subject = topicId,
-                            questionCount = 10
-                        )
-                    )
-                }
-            )
+            ExamGridScreen { topicId ->
+                navController.navigate(Exam(subject = topicId, questionCount = 10))
+            }
         }
         composable<Profile> {
-            ProfileScreen()
+            ProfileScreen(
+                userName = "User 1",
+                email = "user1@gmail.com",
+                onLogoutPressed = {
+                    authViewModel.logout()
+                }
+            )
         }
     }
 }

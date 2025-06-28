@@ -16,4 +16,12 @@
     <string name="upload_pdf">Upload Pdf</string>
     <string name="send">Send</string>
     <string name="score">Score</string>
+    <string name="log_out">Log out</string>
+    <string name="user_name">User Name</string>
+    <string name="account">Account</string>
+    <string name="username">username</string>
+    <string name="password">password</string>
+    <string name="sign_up">Sign Up</string>
+    <string name="confirm_password">confirm password</string>
+    <string name="log_in">Log In</string>
 </resources>
