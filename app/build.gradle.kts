@@ -29,6 +29,8 @@ android {
         buildConfigField("String", "SUPABASE_URL", "\"${localProperties["SUPABASE_URL"]}\"")
         buildConfigField("String", "SUPABASE_KEY", "\"${localProperties["SUPABASE_KEY"]}\"")
         buildConfigField("String", "SUPABASE_WEB_CLIENT_ID", "\"${localProperties["SUPABASE_WEB_CLIENT_ID"]}\"")
+        buildConfigField("String", "SUPABASE_ANDROID_CLIENT_ID", "\"${project.findProperty("SUPABASE_ANDROID_CLIENT_ID")}\"")
+
     }
 
     buildTypes {
@@ -113,6 +115,9 @@ dependencies {
     implementation(platform(libs.supabase.bom))
     implementation(libs.auth.kt)
     implementation(libs.ktor.client.okhttp)
+
+    implementation("com.google.android.gms:play-services-auth:21.3.0")
+
 
 
 }
