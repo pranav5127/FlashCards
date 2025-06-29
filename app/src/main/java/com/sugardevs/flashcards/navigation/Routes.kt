@@ -9,6 +9,9 @@ object SignUp
 object SignIn
 
 @Serializable
+object PasswordReset
+
+@Serializable
 object Home
 
 @Serializable

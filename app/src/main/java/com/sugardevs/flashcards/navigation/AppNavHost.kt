@@ -24,6 +24,7 @@ import com.sugardevs.flashcards.ui.screens.ExamScreen
 import com.sugardevs.flashcards.ui.screens.HomeScreen
 import com.sugardevs.flashcards.ui.screens.PdfUploadScreen
 import com.sugardevs.flashcards.ui.screens.ProfileScreen
+import com.sugardevs.flashcards.ui.screens.auth.ForgotPasswordScreen
 import com.sugardevs.flashcards.ui.screens.auth.SignInScreen
 import com.sugardevs.flashcards.ui.screens.auth.SignUpScreen
 import com.sugardevs.flashcards.ui.viewModels.auth.AuthViewModel
@@ -42,6 +43,7 @@ fun AppNavHost(
         mapOf(
             SignIn::class.qualifiedName!! to 0,
             SignUp::class.qualifiedName!! to 0,
+            PasswordReset::class.qualifiedName!! to 0,
             Home::class.qualifiedName!! to 1,
             CardGrid::class.qualifiedName!! to 2,
             Cards::class.qualifiedName!! to 3,
@@ -54,7 +56,11 @@ fun AppNavHost(
     }
 
     // Keep track of previous destination order
-    var prevOrder by remember { mutableIntStateOf(screenOrder[startDestination::class.qualifiedName] ?: 0) }
+    var prevOrder by remember {
+        mutableIntStateOf(
+            screenOrder[startDestination::class.qualifiedName] ?: 0
+        )
+    }
 
     NavHost(
         navController = navController,
@@ -66,9 +72,13 @@ fun AppNavHost(
             prevOrder = targetOrder
 
             if (targetOrder > newOrder) {
-                slideInHorizontally(initialOffsetX = { it }, animationSpec = tween(300)) + fadeIn(tween(300))
+                slideInHorizontally(initialOffsetX = { it }, animationSpec = tween(300)) + fadeIn(
+                    tween(300)
+                )
             } else {
-                slideInHorizontally(initialOffsetX = { -it }, animationSpec = tween(300)) + fadeIn(tween(300))
+                slideInHorizontally(initialOffsetX = { -it }, animationSpec = tween(300)) + fadeIn(
+                    tween(300)
+                )
             }
         },
         exitTransition = {
@@ -76,16 +86,26 @@ fun AppNavHost(
             val targetOrder = screenOrder[targetState.destination.route] ?: 0
 
             if (targetOrder > newOrder) {
-                slideOutHorizontally(targetOffsetX = { -it }, animationSpec = tween(300)) + fadeOut(tween(300))
+                slideOutHorizontally(targetOffsetX = { -it }, animationSpec = tween(300)) + fadeOut(
+                    tween(300)
+                )
             } else {
-                slideOutHorizontally(targetOffsetX = { it }, animationSpec = tween(300)) + fadeOut(tween(300))
+                slideOutHorizontally(targetOffsetX = { it }, animationSpec = tween(300)) + fadeOut(
+                    tween(300)
+                )
             }
         },
         popEnterTransition = {
-            slideInHorizontally(initialOffsetX = { -it }, animationSpec = tween(300)) + fadeIn(tween(300))
+            slideInHorizontally(
+                initialOffsetX = { -it },
+                animationSpec = tween(300)
+            ) + fadeIn(tween(300))
         },
         popExitTransition = {
-            slideOutHorizontally(targetOffsetX = { it }, animationSpec = tween(300)) + fadeOut(tween(300))
+            slideOutHorizontally(
+                targetOffsetX = { it },
+                animationSpec = tween(300)
+            ) + fadeOut(tween(300))
         }
     ) {
         composable<SignUp> {
@@ -107,10 +127,20 @@ fun AppNavHost(
                         launchSingleTop = true
                     }
                 },
-                onNavigateToSignUp = { navController.navigate(SignUp) }
+                onNavigateToSignUp = { navController.navigate(SignUp) },
+                onNavigationToForgetPasswordReset = { navController.navigate(PasswordReset)}
             )
         }
-        composable<Home> { HomeScreen(navController = navController) }
+        composable<PasswordReset> {
+            ForgotPasswordScreen(
+                onBack = { navController.popBackStack()}
+            )
+        }
+
+        composable<Home> {
+            HomeScreen(navController = navController)
+        }
+
         composable<Cards> {
             val args = it.toRoute<Cards>()
             CardScreen(topicId = args.topicId)

@@ -14,6 +14,7 @@ import java.security.MessageDigest
 import java.util.UUID
 import androidx.credentials.CredentialManager
 import androidx.credentials.GetCredentialRequest
+import com.google.android.gms.common.GoogleApiAvailability
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.sugardevs.flashcards.BuildConfig
@@ -51,8 +52,10 @@ class AuthRepository {
         try {
             Log.d(TAG, "Signing in with email: $email")
             supabase.auth.signInWith(Email) {
+
                 this.email = email
                 this.password = password
+
             }
             emit(AuthResponse.Success)
         } catch (e: Exception) {
@@ -75,7 +78,7 @@ class AuthRepository {
         val googleIdOption = GetGoogleIdOption.Builder()
             .setAutoSelectEnabled(false)
             .setFilterByAuthorizedAccounts(false)
-            .setServerClientId("567698098590-6a0lef56mpgftv1m615mg6naiaquflf5.apps.googleusercontent.com")
+            .setServerClientId(BuildConfig.SUPABASE_WEB_CLIENT_ID)
             .setNonce(hashedNonce)
             .build()
 
@@ -85,8 +88,7 @@ class AuthRepository {
 
         val credentialManager = CredentialManager.create(context)
 
-        // ✅ Check Google Play Services availability
-        val isAvailable = com.google.android.gms.common.GoogleApiAvailability
+        val isAvailable = GoogleApiAvailability
             .getInstance()
             .isGooglePlayServicesAvailable(context)
         Log.d(TAG, "Play Services status: $isAvailable")
@@ -130,7 +132,10 @@ class AuthRepository {
     fun sendPasswordResetEmail(email: String): Flow<AuthResponse> = flow {
         try {
             Log.d(TAG, "Sending password reset email to: $email")
-            supabase.auth.resetPasswordForEmail(email)
+            supabase.auth.resetPasswordForEmail(
+                email,
+                redirectUrl = ""
+            )
             emit(AuthResponse.Success)
         } catch (e: Exception) {
             Log.e(TAG, "Password reset failed: ${e.localizedMessage}", e)
