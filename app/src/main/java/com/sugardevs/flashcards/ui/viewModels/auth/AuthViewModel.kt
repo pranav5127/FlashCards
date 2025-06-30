@@ -2,14 +2,18 @@ package com.sugardevs.flashcards.ui.viewModels.auth
 
 import android.content.Context
 import android.util.Log
-import androidx.compose.runtime.*
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sugardevs.flashcards.data.auth.AuthResponse
 import com.sugardevs.flashcards.data.auth.repository.AuthRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
-import io.github.jan.supabase.auth.user.UserSession
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -18,7 +22,12 @@ class AuthViewModel @Inject constructor(
     private val authRepository: AuthRepository
 ) : ViewModel() {
 
-    // Input field state
+    var userDisplayName by mutableStateOf("Anonymous")
+        private set
+
+    var avatarUrl by mutableStateOf("")
+        private set
+
     var userName by mutableStateOf("")
         private set
 
@@ -28,7 +37,6 @@ class AuthViewModel @Inject constructor(
     var confirmPassword by mutableStateOf("")
         private set
 
-    // Visibility toggles (for password fields)
     var passwordVisible by mutableStateOf(false)
         private set
 
@@ -51,13 +59,6 @@ class AuthViewModel @Inject constructor(
         confirmVisible = !confirmVisible
     }
 
-    fun clearInputState() {
-        userName = ""
-        password = ""
-        confirmPassword = ""
-        passwordVisible = false
-        confirmVisible = false
-    }
 
     private val _authState = MutableStateFlow<AuthResponse?>(null)
     val authState: StateFlow<AuthResponse?> = _authState
@@ -65,8 +66,7 @@ class AuthViewModel @Inject constructor(
     private val _isLoggedIn = MutableStateFlow(false)
     val isLoggedIn: StateFlow<Boolean> = _isLoggedIn
 
-    private val _session = MutableStateFlow<UserSession?>(null)
-    val session: StateFlow<UserSession?> = _session
+
 
     private val _isLoading = MutableStateFlow(true)
     val isLoading: StateFlow<Boolean> = _isLoading
@@ -126,27 +126,21 @@ class AuthViewModel @Inject constructor(
             .launchIn(viewModelScope)
     }
 
-    fun resetPassword(newPassword: String) {
-        Log.d("AuthViewModel", "Attempting password update")
-        authRepository.updatePassword(newPassword)
-            .onEach {
-                Log.d("AuthViewModel", "Password update result: $it")
-                _authState.value = it
-                if (it is AuthResponse.Success) checkAuthStatus()
-            }
-            .launchIn(viewModelScope)
-    }
-
     fun logout(onLogOutComplete: (() -> Unit)? = null) {
         Log.d("AuthViewModel", "Logging out")
         viewModelScope.launch {
             authRepository.logout()
             _isLoggedIn.value = false
-            _session.value = null
+            _authState.value = null
+            userName = ""
+            password = ""
+            confirmPassword = ""
+            resetEmail = ""
             Log.d("AuthViewModel", "Logout complete")
             onLogOutComplete?.invoke()
         }
     }
+
 
     fun clearAuthState() {
         Log.d("AuthViewModel", "Clearing auth state")
@@ -158,10 +152,21 @@ class AuthViewModel @Inject constructor(
         viewModelScope.launch {
             _isLoading.value = true
             val session = authRepository.getSession()
-            _session.value = session
             _isLoggedIn.value = session != null
+
+            session?.user?.let { user ->
+                userDisplayName = user.userMetadata?.get("full_name")?.toString() ?: "Anonymous"
+                val rawAvatar = user.userMetadata?.get("avatar_url")?.toString() ?: ""
+                avatarUrl = rawAvatar.removeSurrounding("\"")
+                userName = user.email ?: ""
+                userDisplayName = userDisplayName.removeSurrounding("\"")
+                Log.d("AuthViewModel", " Avatar: $avatarUrl")
+            }
+
             _isLoading.value = false
-            Log.d("AuthViewModel", "Session: $session")
         }
     }
+
+
+
 }

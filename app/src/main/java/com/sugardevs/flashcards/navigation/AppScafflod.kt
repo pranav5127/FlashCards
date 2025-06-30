@@ -90,7 +90,7 @@ fun AppScaffold(navController: NavHostController, startDestination: Any) {
                         showBackButton = navController.previousBackStackEntry != null,
                         onBackClick = { navController.popBackStack() },
                         modifier = Modifier,
-                        onProfileClick = { navController.navigate(Profile) }
+                        onProfileClick = { navController.navigate(Profile) },
                     )
                 }
             } else null

@@ -24,7 +24,8 @@ import com.sugardevs.flashcards.ui.viewModels.HomeScreenViewModel
 fun HomeScreen(
     modifier: Modifier = Modifier,
     navController: NavHostController ,
-    homeScreenViewModel: HomeScreenViewModel = hiltViewModel()
+    homeScreenViewModel: HomeScreenViewModel = hiltViewModel(),
+    userName: String
 ) {
     val homeScreenUiState by homeScreenViewModel.homeUiState.collectAsState()
     val gradientColors = listOf(Color(0xFFD0BBDE), Color(0xFFE0F7FA), Color(0xFFFCE4EC))
@@ -49,7 +50,7 @@ fun HomeScreen(
                 horizontalArrangement = Arrangement.Start
             ) {
                 Text(
-                    text = "Hi ${homeScreenUiState.userName},",
+                    text = "Hi ${userName},",
                     fontSize = 40.sp,
                     style = TextStyle(
                         brush = Brush.horizontalGradient(colors = gradientColors)
@@ -87,45 +88,6 @@ fun HomeScreen(
                         }
                     }
                 }
-            }
-        }
-    }
-}
-
-@Preview(
-    showBackground = true,
-    showSystemUi = true,
-)
-@Composable
-fun HomeScreenPreview() {
-    FlashCardsTheme(darkTheme = false) {
-        HomeScreen(
-            navController = rememberNavController()
-        )
-    }
-}
-
-@Preview(
-    showBackground = true,
-    showSystemUi = true,
-)
-@Composable
-fun HomeScreenPreviewDarkTheme() {
-    FlashCardsTheme(darkTheme = true) {
-        HomeScreen( navController = NavHostController(context = LocalContext.current))
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Preview(showBackground = true, name = "Home Screen With Scaffold Preview")
-@Composable
-fun HomeScreenWithScaffoldPreview() {
-    FlashCardsTheme {
-        Scaffold(
-            topBar = { TopAppBar(title = { Text("Home Screen Preview") }) }
-        ) { paddingValues ->
-            Box(Modifier.padding(paddingValues)) {
-                HomeScreen( navController = NavHostController(context = LocalContext.current))
             }
         }
     }

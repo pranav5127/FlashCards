@@ -1,36 +1,53 @@
 package com.sugardevs.flashcards.ui.screens
 
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.Button
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
+import android.util.Log
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import coil3.compose.AsyncImage
+import coil3.compose.AsyncImagePainter
+import coil3.request.ImageRequest
+import coil3.request.crossfade
 import com.sugardevs.flashcards.R
+import com.sugardevs.flashcards.ui.viewModels.auth.AuthViewModel
+
+private const val TAG = "ProfileScreen"
 
 @Composable
 fun ProfileScreen(
     userName: String,
     email: String,
-    onLogoutPressed: () -> Unit
+    onLogoutPressed: () -> Unit,
+    authViewModel: AuthViewModel = hiltViewModel()
 ) {
+
+
+    val context = LocalContext.current
+    val avatarUrl = authViewModel.avatarUrl
+
+    Log.d(TAG, "Composing ProfileScreen")
+    Log.d(TAG, "Avatar URL from ViewModel: $avatarUrl")
+
+    val imageRequest = remember(avatarUrl) {
+        Log.d(TAG, "Building ImageRequest with URL: $avatarUrl")
+        ImageRequest.Builder(context)
+            .data(avatarUrl)
+            .crossfade(true)
+            .listener(
+                onStart = { Log.d(TAG, "Image loading started") },
+                onSuccess = { _, _ -> Log.d(TAG, "Image loaded successfully") },
+                onError = { _, result -> Log.e(TAG, "Image load failed: ${result.throwable}") },
+                onCancel = { Log.w(TAG, "Image load cancelled") }
+            )
+            .build()
+    }
 
     Column(
         modifier = Modifier
@@ -40,13 +57,25 @@ fun ProfileScreen(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
 
-        Image(
-            painter = painterResource(id = R.drawable.pranav),
-            contentDescription = stringResource(R.string.profile),
-            modifier = Modifier
-                .size(200.dp)
-                .clip(CircleShape)
+        Log.d(TAG, "Rendering AsyncImage")
+        AsyncImage(
+            model = imageRequest,
+            contentDescription = "User Avatar",
+            placeholder = painterResource(R.drawable.deafult),
+            error = painterResource(R.drawable.deafult),
+            fallback = painterResource(R.drawable.deafult),
+            modifier = Modifier.size(300.dp),
+            onLoading = {
+                Log.d("ProfileScreen", "Image is loading...")
+            },
+            onSuccess = {
+                Log.d("ProfileScreen", "Image loaded successfully.")
+            },
+            onError = {
+                Log.e("ProfileScreen", "Image load failed.")
+            }
         )
+
 
         HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp))
 
@@ -58,11 +87,11 @@ fun ProfileScreen(
         ) {
             Text(
                 text = stringResource(R.string.user_name),
-                color = MaterialTheme.colorScheme.onPrimary
+                color = MaterialTheme.colorScheme.onSurface
             )
             Text(
                 text = userName,
-                color = MaterialTheme.colorScheme.onPrimary
+                color = MaterialTheme.colorScheme.onSurface
             )
         }
 
@@ -74,31 +103,21 @@ fun ProfileScreen(
         ) {
             Text(
                 text = stringResource(R.string.account),
-                color = MaterialTheme.colorScheme.onPrimary
+                color = MaterialTheme.colorScheme.onSurface
             )
             Text(
                 text = email,
-                color = MaterialTheme.colorScheme.onPrimary
-
+                color = MaterialTheme.colorScheme.onSurface
             )
-
         }
+
         Spacer(modifier = Modifier.height(8.dp))
-        Button(
-            onClick = onLogoutPressed
-        ) {
+
+        Button(onClick = {
+            Log.d(TAG, "Logout button clicked")
+            onLogoutPressed()
+        }) {
             Text(stringResource(R.string.log_out))
         }
-
     }
-}
-
-@Preview
-@Composable
-fun ProfileScreenPreview() {
-    ProfileScreen(
-        userName = "User1",
-        email = "user1@email.com",
-        onLogoutPressed = { }
-    )
 }

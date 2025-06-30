@@ -1,11 +1,13 @@
 package com.sugardevs.flashcards.navigation
 
+import android.util.Log
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
@@ -34,10 +36,14 @@ import kotlin.collections.get
 fun AppNavHost(
     navController: NavHostController,
     startDestination: Any,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    authViewModel: AuthViewModel = hiltViewModel()
 ) {
-    val authViewModel: AuthViewModel = hiltViewModel()
 
+    LaunchedEffect(Unit) {
+        Log.d("NAV", "Calling checkAuthStatus() from ProfileScreen")
+        authViewModel.checkAuthStatus()
+    }
     // Screen order map
     val screenOrder = remember {
         mapOf(
@@ -138,7 +144,7 @@ fun AppNavHost(
         }
 
         composable<Home> {
-            HomeScreen(navController = navController)
+            HomeScreen(navController = navController, userName = authViewModel.userDisplayName)
         }
 
         composable<Cards> {
@@ -168,10 +174,18 @@ fun AppNavHost(
         }
         composable<Profile> {
             ProfileScreen(
-                userName = "User 1",
-                email = "user1@gmail.com",
-                onLogoutPressed = { authViewModel.logout() }
+                userName = authViewModel.userDisplayName,
+                email = authViewModel.userName,
+                onLogoutPressed = {
+                    authViewModel.logout {
+                        navController.navigate(SignIn) {
+                            popUpTo(0) { inclusive = true }
+                            launchSingleTop = true
+                        }
+                    }
+                }
             )
         }
+
     }
 }

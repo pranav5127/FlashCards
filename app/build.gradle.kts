@@ -116,8 +116,11 @@ dependencies {
     implementation(libs.auth.kt)
     implementation(libs.ktor.client.okhttp)
 
-    implementation("com.google.android.gms:play-services-auth:21.3.0")
+    implementation(libs.play.services.auth)
 
+    // coil
+    implementation(libs.coil.compose)
+    implementation(libs.coil.network.okhttp)
 
 
 }
