@@ -35,6 +35,10 @@ class AuthViewModel @Inject constructor(
     var confirmVisible by mutableStateOf(false)
         private set
 
+    var resetEmail by mutableStateOf("")
+        private set
+
+    fun updateResetEmail(newEmail: String) { resetEmail = newEmail }
     fun updateUserName(newValue: String) { userName = newValue }
     fun updatePassword(newValue: String) { password = newValue }
     fun updateConfirmPassword(newValue: String) { confirmPassword = newValue }
