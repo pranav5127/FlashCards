@@ -134,8 +134,10 @@ class AuthRepository {
             Log.d(TAG, "Sending password reset email to: $email")
             supabase.auth.resetPasswordForEmail(
                 email,
-                redirectUrl = ""
+                redirectUrl = "https://flash-passwd.vercel.app/"
+
             )
+
             emit(AuthResponse.Success)
         } catch (e: Exception) {
             Log.e(TAG, "Password reset failed: ${e.localizedMessage}", e)

@@ -30,7 +30,6 @@ import com.sugardevs.flashcards.ui.theme.FlashCardsTheme
 @Composable
 fun ExamCard(
     subject: String,
-    questionCount: Int,
     onExamCardClick: (String) -> Unit
 ) {
     Card(
@@ -55,10 +54,7 @@ fun ExamCard(
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.primary
             )
-            Text(
-                text = "$questionCount QUESTIONS",
-                style = MaterialTheme.typography.bodyMedium
-            )
+
             IconButton(
                 onClick = { onExamCardClick(subject) },
                 modifier = Modifier
@@ -81,7 +77,7 @@ fun ExamCard(
 @Preview
 @Composable
 fun ExamCardPreview() {
-    ExamCard(subject = "Android", questionCount = 10, onExamCardClick = {})
+    ExamCard(subject = "Android",  onExamCardClick = {})
 }
 @Preview
 @Composable
@@ -89,7 +85,7 @@ fun ExamCardPreviewDarkMode() {
     FlashCardsTheme(
         darkTheme = true
     ) {
-        ExamCard(subject = "Android", questionCount = 10, onExamCardClick = {})
+        ExamCard(subject = "Android",  onExamCardClick = {})
     }
 }
 

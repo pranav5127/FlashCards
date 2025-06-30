@@ -16,19 +16,21 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.sugardevs.flashcards.data.auth.AuthResponse
 import com.sugardevs.flashcards.ui.viewModels.auth.AuthViewModel
+import com.sugardevs.flashcards.ui.viewModels.auth.SignInViewModel
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SignInScreen(
     authViewModel: AuthViewModel = hiltViewModel(),
+    signInViewModel: SignInViewModel = hiltViewModel(),
     onSignInSuccess: () -> Unit = {},
     onNavigateToSignUp: () -> Unit = {},
     onNavigationToForgetPasswordReset: () -> Unit = {}
 ) {
-    var email by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
-    var passwordVisible by remember { mutableStateOf(false) }
+    val email = signInViewModel.email
+    val password = signInViewModel.password
+    val passwordVisible = signInViewModel.passwordVisible
 
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
@@ -39,6 +41,7 @@ fun SignInScreen(
         when (authState) {
             is AuthResponse.Success -> {
                 authViewModel.clearAuthState()
+                signInViewModel.clearFields()
                 onSignInSuccess()
             }
             is AuthResponse.Error -> {
@@ -69,7 +72,6 @@ fun SignInScreen(
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // → Google Sign-In Button
             Button(
                 onClick = { authViewModel.signInWithGoogle(context) },
                 shape = RoundedCornerShape(30.dp),
@@ -84,7 +86,7 @@ fun SignInScreen(
 
             OutlinedTextField(
                 value = email,
-                onValueChange = { email = it },
+                onValueChange = { signInViewModel.onEmailChange(it) },
                 placeholder = { Text("Email") },
                 singleLine = true,
                 shape = RoundedCornerShape(30.dp),
@@ -95,14 +97,14 @@ fun SignInScreen(
 
             OutlinedTextField(
                 value = password,
-                onValueChange = { password = it },
+                onValueChange = { signInViewModel.onPasswordChange(it) },
                 placeholder = { Text("Password") },
                 singleLine = true,
                 shape = RoundedCornerShape(30.dp),
                 visualTransformation =
                     if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                 trailingIcon = {
-                    IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                    IconButton(onClick = { signInViewModel.togglePasswordVisibility() }) {
                         Icon(
                             if (passwordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff,
                             contentDescription = null
@@ -125,7 +127,7 @@ fun SignInScreen(
                 Text("Log In")
             }
 
-            TextButton(onClick = onNavigationToForgetPasswordReset ) {
+            TextButton(onClick = onNavigationToForgetPasswordReset) {
                 Text("Forgot Password?")
             }
 

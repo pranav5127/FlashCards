@@ -149,8 +149,7 @@ fun AppNavHost(
             val args = it.toRoute<Exam>()
             ExamScreen(
                 subject = args.subject,
-                questionCount = args.questionCount,
-                onExamCardClick = { navController.navigate(Question(it)) }
+                onExamCardClick = { navController.navigate(Question(it)) },
             )
         }
         composable<Question> {
@@ -164,7 +163,7 @@ fun AppNavHost(
         composable<CardGrid> { CardsGridScreen { navController.navigate(Cards(it)) } }
         composable<ExamGrid> {
             ExamGridScreen { topicId ->
-                navController.navigate(Exam(subject = topicId, questionCount = 10))
+                navController.navigate(Exam(subject = topicId))
             }
         }
         composable<Profile> {

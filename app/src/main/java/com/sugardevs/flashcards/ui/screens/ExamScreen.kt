@@ -11,11 +11,10 @@ import com.sugardevs.flashcards.ui.theme.FlashCardsTheme
 @Composable
 fun ExamScreen(
     subject: String,
-    questionCount: Int,
     onExamCardClick: (actualTopicId: String) -> Unit = {}
 ) {
     Box(modifier = Modifier.fillMaxSize()) {
-        ExamCard(subject, questionCount, onExamCardClick)
+        ExamCard(subject, onExamCardClick)
     }
 }
 
@@ -26,7 +25,6 @@ fun ExamScreenPreview() {
     FlashCardsTheme {
         ExamScreen(
             subject = "1",
-            questionCount = 1
         )
     }
 }
@@ -39,7 +37,6 @@ fun ExamScreenPreviewDark() {
     ) {
         ExamScreen(
             subject = "2",
-            questionCount = 2
         )
     }
 }

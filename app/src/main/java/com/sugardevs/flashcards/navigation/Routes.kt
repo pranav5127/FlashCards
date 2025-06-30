@@ -18,7 +18,7 @@ object Home
 data class Cards(val topicId: String)
 
 @Serializable
-data class Exam(val subject: String, val questionCount: Int)
+data class Exam(val subject: String)
 
 @Serializable
 object PdfUpload
