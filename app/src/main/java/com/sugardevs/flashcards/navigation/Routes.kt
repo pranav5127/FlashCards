@@ -9,7 +9,10 @@ object SignUp
 object SignIn
 
 @Serializable
-object PasswordReset
+object ForgetPassword
+
+@Serializable
+data class PasswordReset(val token: String)
 
 @Serializable
 object Home

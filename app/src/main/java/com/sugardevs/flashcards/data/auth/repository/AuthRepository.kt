@@ -134,7 +134,7 @@ class AuthRepository {
             Log.d(TAG, "Sending password reset email to: $email")
             supabase.auth.resetPasswordForEmail(
                 email,
-                redirectUrl = ""
+                redirectUrl = "com.sugardevs.flashcards://reset-password"
             )
             emit(AuthResponse.Success)
         } catch (e: Exception) {
@@ -155,4 +155,26 @@ class AuthRepository {
             emit(AuthResponse.Error(e.localizedMessage))
         }
     }
+
+    fun restoreSessionManually(token: String): Flow<AuthResponse> = flow {
+        try {
+            Log.d(TAG, "Manually restoring session from token: $token")
+
+            val session = UserSession(
+                accessToken = token,
+                refreshToken = "",
+                user = null,
+                expiresIn = 3600,
+                tokenType = "bearer"
+            )
+
+            supabase.auth.sessionManager.saveSession(session)
+            emit(AuthResponse.Success)
+        } catch (e: Exception) {
+            emit(AuthResponse.Error("Session restore failed: ${e.message}"))
+        }
+    }
+
+
+
 }

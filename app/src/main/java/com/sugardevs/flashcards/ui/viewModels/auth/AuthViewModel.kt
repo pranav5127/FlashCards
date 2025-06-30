@@ -136,4 +136,24 @@ class AuthViewModel @Inject constructor(
             Log.d("AuthViewModel", "Session: $session")
         }
     }
+
+    fun setAccessTokenAndReset(token: String, newPassword: String) {
+        viewModelScope.launch {
+            try {
+                Log.d("AuthViewModel", "Verifying recovery token")
+                authRepository.supabase.auth.verifyEmailOtp(
+                    type = io.github.jan.supabase.auth.OtpType.Recovery,
+                    token = token
+                )
+                Log.d("AuthViewModel", "Token verified. Proceeding to password reset")
+                resetPassword(newPassword)
+            } catch (e: Exception) {
+                Log.e("AuthViewModel", "Token verification failed: ${e.message}", e)
+                _authState.value = AuthResponse.Error("Invalid or expired token.")
+            }
+        }
+    }
+
+
+
 }

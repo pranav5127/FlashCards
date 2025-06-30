@@ -1,5 +1,6 @@
 package com.sugardevs.flashcards.navigation
 
+import android.util.Log
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -15,6 +16,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.navDeepLink
 import androidx.navigation.toRoute
 import com.sugardevs.flashcards.ui.components.ExamQuestions
 import com.sugardevs.flashcards.ui.screens.CardScreen
@@ -25,6 +27,7 @@ import com.sugardevs.flashcards.ui.screens.HomeScreen
 import com.sugardevs.flashcards.ui.screens.PdfUploadScreen
 import com.sugardevs.flashcards.ui.screens.ProfileScreen
 import com.sugardevs.flashcards.ui.screens.auth.ForgotPasswordScreen
+import com.sugardevs.flashcards.ui.screens.auth.PasswordResetScreen
 import com.sugardevs.flashcards.ui.screens.auth.SignInScreen
 import com.sugardevs.flashcards.ui.screens.auth.SignUpScreen
 import com.sugardevs.flashcards.ui.viewModels.auth.AuthViewModel
@@ -43,7 +46,7 @@ fun AppNavHost(
         mapOf(
             SignIn::class.qualifiedName!! to 0,
             SignUp::class.qualifiedName!! to 0,
-            PasswordReset::class.qualifiedName!! to 0,
+            ForgetPassword::class.qualifiedName!! to 0,
             Home::class.qualifiedName!! to 1,
             CardGrid::class.qualifiedName!! to 2,
             Cards::class.qualifiedName!! to 3,
@@ -128,12 +131,12 @@ fun AppNavHost(
                     }
                 },
                 onNavigateToSignUp = { navController.navigate(SignUp) },
-                onNavigationToForgetPasswordReset = { navController.navigate(PasswordReset)}
+                onNavigationToForgetPasswordReset = { navController.navigate(ForgetPassword) }
             )
         }
-        composable<PasswordReset> {
+        composable<ForgetPassword> {
             ForgotPasswordScreen(
-                onBack = { navController.popBackStack()}
+                onBack = { navController.popBackStack() }
             )
         }
 
@@ -174,5 +177,20 @@ fun AppNavHost(
                 onLogoutPressed = { authViewModel.logout() }
             )
         }
+
+        composable(
+            route = "reset-password?token={token}",
+            deepLinks = listOf(
+                navDeepLink {
+                    uriPattern = "com.sugardevs.flashcards://reset-password?token={token}"
+                }
+            )
+        ) { backStackEntry ->
+            val token = backStackEntry.arguments?.getString("token")
+            Log.d("DeepLink", "Received token from deep link: $token")
+            PasswordResetScreen(accessToken = token ?: "")
+        }
+
+
     }
 }
