@@ -1,34 +1,12 @@
 package com.sugardevs.flashcards.ui.screens.auth
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
-import androidx.compose.material3.Button
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -52,10 +30,21 @@ fun SignUpScreen(
     val authState by authViewModel.authState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
+    val context = LocalContext.current
 
-    var passwordVisible by remember { mutableStateOf(false) }
-    var confirmVisible by remember { mutableStateOf(false) }
+    // Reactive UI state from ViewModel
+    val username = authViewModel.userName
+    val password = authViewModel.password
+    val confirm = authViewModel.confirmPassword
+    val passwordVisible by authViewModel::passwordVisible
+    val confirmVisible by authViewModel::confirmVisible
 
+    val isFormValid = username.isNotBlank() &&
+            password.isNotBlank() &&
+            confirm.isNotBlank() &&
+            password == confirm
+
+    // Handle auth state changes
     LaunchedEffect(authState) {
         when (authState) {
             is AuthResponse.Success -> {
@@ -65,35 +54,24 @@ fun SignUpScreen(
             is AuthResponse.Error -> {
                 authViewModel.clearAuthState()
                 coroutineScope.launch {
-                    snackbarHostState.showSnackbar("Oops! Something went wrong.")
+                    snackbarHostState.showSnackbar(context.getString(R.string.oops_something_went_wrong))
                 }
             }
             else -> Unit
         }
     }
 
-    val username = authViewModel.userName
-    val password = authViewModel.password
-    val confirm = authViewModel.confirmPassword
-    val context = LocalContext.current
-
-    val isFormValid = username.isNotBlank() &&
-            password.isNotBlank() &&
-            confirm.isNotBlank() &&
-            password == confirm
-
     Scaffold(
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
     ) { padding ->
         Column(
-            Modifier
+            modifier = Modifier
                 .fillMaxSize()
                 .padding(20.dp)
                 .padding(padding),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            // ADD GOOGLE SIGN-IN BUTTON
             Button(
                 onClick = { authViewModel.signInWithGoogle(context) },
                 modifier = Modifier
@@ -101,7 +79,7 @@ fun SignUpScreen(
                     .padding(vertical = 8.dp),
                 shape = RoundedCornerShape(30.dp)
             ) {
-                Text(text = "Sign In With Google")
+                Text(stringResource(R.string.sign_in_with_google))
             }
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -109,7 +87,7 @@ fun SignUpScreen(
             OutlinedTextField(
                 value = username,
                 onValueChange = authViewModel::updateUserName,
-                placeholder = { Text(stringResource(R.string.username)) },
+                placeholder = { Text(stringResource(R.string.email)) },
                 shape = RoundedCornerShape(30.dp),
                 modifier = Modifier
                     .fillMaxWidth()
@@ -128,9 +106,9 @@ fun SignUpScreen(
                 singleLine = true,
                 visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                 trailingIcon = {
-                    IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                    IconButton(onClick = authViewModel::togglePasswordVisibility) {
                         Icon(
-                            if (passwordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
+                            imageVector = if (passwordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
                             contentDescription = null
                         )
                     }
@@ -148,9 +126,9 @@ fun SignUpScreen(
                 singleLine = true,
                 visualTransformation = if (confirmVisible) VisualTransformation.None else PasswordVisualTransformation(),
                 trailingIcon = {
-                    IconButton(onClick = { confirmVisible = !confirmVisible }) {
+                    IconButton(onClick = authViewModel::toggleConfirmPasswordVisibility) {
                         Icon(
-                            if (confirmVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
+                            imageVector = if (confirmVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
                             contentDescription = null
                         )
                     }
@@ -160,7 +138,7 @@ fun SignUpScreen(
             Spacer(modifier = Modifier.height(16.dp))
 
             Button(
-                onClick = { authViewModel.signUp() },
+                onClick = authViewModel::signUp,
                 enabled = isFormValid,
                 shape = RoundedCornerShape(30.dp),
                 modifier = Modifier

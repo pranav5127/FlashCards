@@ -18,6 +18,7 @@ class AuthViewModel @Inject constructor(
     private val authRepository: AuthRepository
 ) : ViewModel() {
 
+    // Input field state
     var userName by mutableStateOf("")
         private set
 
@@ -27,9 +28,32 @@ class AuthViewModel @Inject constructor(
     var confirmPassword by mutableStateOf("")
         private set
 
+    // Visibility toggles (for password fields)
+    var passwordVisible by mutableStateOf(false)
+        private set
+
+    var confirmVisible by mutableStateOf(false)
+        private set
+
     fun updateUserName(newValue: String) { userName = newValue }
     fun updatePassword(newValue: String) { password = newValue }
     fun updateConfirmPassword(newValue: String) { confirmPassword = newValue }
+
+    fun togglePasswordVisibility() {
+        passwordVisible = !passwordVisible
+    }
+
+    fun toggleConfirmPasswordVisibility() {
+        confirmVisible = !confirmVisible
+    }
+
+    fun clearInputState() {
+        userName = ""
+        password = ""
+        confirmPassword = ""
+        passwordVisible = false
+        confirmVisible = false
+    }
 
     private val _authState = MutableStateFlow<AuthResponse?>(null)
     val authState: StateFlow<AuthResponse?> = _authState
