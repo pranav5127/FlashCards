@@ -1,13 +1,11 @@
 package com.sugardevs.flashcards.navigation
 
-import android.util.Log
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
@@ -30,7 +28,6 @@ import com.sugardevs.flashcards.ui.screens.auth.ForgotPasswordScreen
 import com.sugardevs.flashcards.ui.screens.auth.SignInScreen
 import com.sugardevs.flashcards.ui.screens.auth.SignUpScreen
 import com.sugardevs.flashcards.ui.viewModels.auth.AuthViewModel
-import kotlin.collections.get
 
 @Composable
 fun AppNavHost(

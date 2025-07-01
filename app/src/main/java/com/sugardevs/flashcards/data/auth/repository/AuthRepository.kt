@@ -146,16 +146,16 @@ class AuthRepository {
         }
     }
 
-    fun updatePassword(newPassword: String): Flow<AuthResponse> = flow {
-        try {
-            Log.d(TAG, "Updating password.")
-            supabase.auth.updateUser {
-                password = newPassword
-            }
-            emit(AuthResponse.Success)
-        } catch (e: Exception) {
-            Log.e(TAG, "Password update failed: ${e.localizedMessage}", e)
-            emit(AuthResponse.Error(e.localizedMessage))
-        }
-    }
+//    fun updatePassword(newPassword: String): Flow<AuthResponse> = flow {
+//        try {
+//            Log.d(TAG, "Updating password.")
+//            supabase.auth.updateUser {
+//                password = newPassword
+//            }
+//            emit(AuthResponse.Success)
+//        } catch (e: Exception) {
+//            Log.e(TAG, "Password update failed: ${e.localizedMessage}", e)
+//            emit(AuthResponse.Error(e.localizedMessage))
+//        }
+//    }
 }
