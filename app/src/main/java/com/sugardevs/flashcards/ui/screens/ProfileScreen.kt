@@ -2,10 +2,13 @@ package com.sugardevs.flashcards.ui.screens
 
 import android.util.Log
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -28,26 +31,22 @@ fun ProfileScreen(
     authViewModel: AuthViewModel = hiltViewModel()
 ) {
 
+    LaunchedEffect(Unit) {
+        authViewModel.checkAuthStatus()
+    }
 
     val context = LocalContext.current
-    val avatarUrl = authViewModel.avatarUrl
+    val avatarUrl by authViewModel.avatarUrl.collectAsState()
 
     Log.d(TAG, "Composing ProfileScreen")
     Log.d(TAG, "Avatar URL from ViewModel: $avatarUrl")
 
-    val imageRequest = remember(avatarUrl) {
-        Log.d(TAG, "Building ImageRequest with URL: $avatarUrl")
-        ImageRequest.Builder(context)
-            .data(avatarUrl)
-            .crossfade(true)
-            .listener(
-                onStart = { Log.d(TAG, "Image loading started") },
-                onSuccess = { _, _ -> Log.d(TAG, "Image loaded successfully") },
-                onError = { _, result -> Log.e(TAG, "Image load failed: ${result.throwable}") },
-                onCancel = { Log.w(TAG, "Image load cancelled") }
-            )
-            .build()
-    }
+    val imageRequest = ImageRequest.Builder(context)
+        .data(avatarUrl)
+        .crossfade(true)
+        .build()
+
+
 
     Column(
         modifier = Modifier
@@ -64,17 +63,13 @@ fun ProfileScreen(
             placeholder = painterResource(R.drawable.deafult),
             error = painterResource(R.drawable.deafult),
             fallback = painterResource(R.drawable.deafult),
-            modifier = Modifier.size(300.dp),
-            onLoading = {
-                Log.d("ProfileScreen", "Image is loading...")
-            },
-            onSuccess = {
-                Log.d("ProfileScreen", "Image loaded successfully.")
-            },
-            onError = {
-                Log.e("ProfileScreen", "Image load failed.")
-            }
-        )
+            contentScale = ContentScale.Crop,
+            modifier = Modifier
+                .size(200.dp)
+                .clip(CircleShape),
+
+            )
+
 
 
         HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp))

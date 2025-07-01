@@ -90,7 +90,12 @@ fun AppScaffold(navController: NavHostController, startDestination: Any) {
                         showBackButton = navController.previousBackStackEntry != null,
                         onBackClick = { navController.popBackStack() },
                         modifier = Modifier,
-                        onProfileClick = { navController.navigate(Profile) },
+                        onProfileClick = {
+                            navController.navigate(Profile) {
+                                launchSingleTop = true
+                                popUpTo(Profile) { inclusive = false }
+                            }
+                        },
                     )
                 }
             } else null

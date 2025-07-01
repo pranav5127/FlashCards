@@ -37,6 +37,10 @@ fun SignInScreen(
     val authState by authViewModel.authState.collectAsState()
     val context = LocalContext.current
 
+    LaunchedEffect(Unit) {
+        authViewModel.checkAuthStatus()
+    }
+
     LaunchedEffect(authState) {
         when (authState) {
             is AuthResponse.Success -> {

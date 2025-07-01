@@ -7,6 +7,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.rememberNavController
+import com.sugardevs.flashcards.ui.screens.SplashScreen
 import com.sugardevs.flashcards.ui.viewModels.auth.AuthViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -14,6 +15,7 @@ import com.sugardevs.flashcards.ui.viewModels.auth.AuthViewModel
 fun MainAppNavigation() {
     val navController = rememberNavController()
     val authViewModel: AuthViewModel = hiltViewModel()
+
     val isLoggedIn by authViewModel.isLoggedIn.collectAsState()
     val isLoading by authViewModel.isLoading.collectAsState()
 
@@ -21,10 +23,14 @@ fun MainAppNavigation() {
         authViewModel.checkAuthStatus()
     }
 
-    if (isLoading) return
+    if (isLoading) {
+        SplashScreen()
+        return
+    }
 
     val startDestination = if (isLoggedIn) Home else SignIn
 
     AppScaffold(navController = navController, startDestination = startDestination)
 }
+
 

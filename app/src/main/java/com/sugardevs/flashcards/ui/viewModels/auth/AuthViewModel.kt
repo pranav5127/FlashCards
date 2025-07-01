@@ -25,8 +25,8 @@ class AuthViewModel @Inject constructor(
     var userDisplayName by mutableStateOf("Anonymous")
         private set
 
-    var avatarUrl by mutableStateOf("")
-        private set
+    private val _avatarUrl = MutableStateFlow("")
+    val avatarUrl: StateFlow<String> = _avatarUrl
 
     var userName by mutableStateOf("")
         private set
@@ -136,11 +136,12 @@ class AuthViewModel @Inject constructor(
             password = ""
             confirmPassword = ""
             resetEmail = ""
+            userDisplayName = "Anonymous"
+            _avatarUrl.value = ""
             Log.d("AuthViewModel", "Logout complete")
             onLogOutComplete?.invoke()
         }
     }
-
 
     fun clearAuthState() {
         Log.d("AuthViewModel", "Clearing auth state")
@@ -157,7 +158,7 @@ class AuthViewModel @Inject constructor(
             session?.user?.let { user ->
                 userDisplayName = user.userMetadata?.get("full_name")?.toString() ?: "Anonymous"
                 val rawAvatar = user.userMetadata?.get("avatar_url")?.toString() ?: ""
-                avatarUrl = rawAvatar.removeSurrounding("\"")
+                _avatarUrl.value = rawAvatar.removeSurrounding("\"")
                 userName = user.email ?: ""
                 userDisplayName = userDisplayName.removeSurrounding("\"")
                 Log.d("AuthViewModel", " Avatar: $avatarUrl")

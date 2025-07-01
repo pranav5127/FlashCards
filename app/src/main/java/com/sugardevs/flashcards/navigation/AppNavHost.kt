@@ -40,10 +40,6 @@ fun AppNavHost(
     authViewModel: AuthViewModel = hiltViewModel()
 ) {
 
-    LaunchedEffect(Unit) {
-        Log.d("NAV", "Calling checkAuthStatus() from ProfileScreen")
-        authViewModel.checkAuthStatus()
-    }
     // Screen order map
     val screenOrder = remember {
         mapOf(

@@ -72,6 +72,7 @@ class AuthRepository {
     }
 
     fun signInWithGoogle(context: Context): Flow<AuthResponse> = flow {
+
         val hashedNonce = createNonce()
         Log.d(TAG, "Starting Google sign-in with nonce: $hashedNonce")
 

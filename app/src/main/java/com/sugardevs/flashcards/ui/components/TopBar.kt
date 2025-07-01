@@ -1,6 +1,7 @@
 package com.sugardevs.flashcards.ui.components
 
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -10,7 +11,11 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -33,7 +38,7 @@ fun TopBar(
     authViewModel: AuthViewModel = hiltViewModel()
 ) {
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
-    val avatarUrl = authViewModel.avatarUrl
+    val avatarUrl by authViewModel.avatarUrl.collectAsState()
 
     TopAppBar(
         title = {
@@ -66,7 +71,10 @@ fun TopBar(
                     placeholder = painterResource(R.drawable.deafult),
                     error = painterResource(R.drawable.deafult),
                     fallback = painterResource(R.drawable.deafult),
-                    modifier = Modifier.size(40.dp)
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .size(40.dp)
+                        .clip(CircleShape)
                 )
 
             }

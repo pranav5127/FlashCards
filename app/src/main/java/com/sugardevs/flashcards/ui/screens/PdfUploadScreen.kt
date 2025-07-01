@@ -72,7 +72,7 @@ fun PdfUploadScreen(
         verticalArrangement = Arrangement.Center
     ) {
         Text(
-            text = "Upload a PDF or enter a topic to generate flashcards.",
+            text = "Upload a PDF or enter a topic to generate flashcards and quiz.",
             color = Color.Gray,
             modifier = Modifier.padding(8.dp)
         )

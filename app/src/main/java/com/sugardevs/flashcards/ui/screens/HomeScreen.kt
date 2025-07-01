@@ -1,23 +1,26 @@
 package com.sugardevs.flashcards.ui.screens
 
-import androidx.compose.foundation.layout.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
-import androidx.navigation.compose.rememberNavController
 import com.sugardevs.flashcards.navigation.Cards
 import com.sugardevs.flashcards.ui.components.FlashCardTopic
-import com.sugardevs.flashcards.ui.theme.FlashCardsTheme
 import com.sugardevs.flashcards.ui.viewModels.HomeScreenViewModel
 
 @Composable
@@ -28,7 +31,6 @@ fun HomeScreen(
     userName: String
 ) {
     val homeScreenUiState by homeScreenViewModel.homeUiState.collectAsState()
-    val gradientColors = listOf(Color(0xFFD0BBDE), Color(0xFFE0F7FA), Color(0xFFFCE4EC))
 
     val cardGradients = listOf(
         Color(0xFF3DDC84) to Color(0xFF2B9D5C),
@@ -52,9 +54,7 @@ fun HomeScreen(
                 Text(
                     text = "Hi ${userName},",
                     fontSize = 40.sp,
-                    style = TextStyle(
-                        brush = Brush.horizontalGradient(colors = gradientColors)
-                    )
+                   color = MaterialTheme.colorScheme.onSurface
                 )
             }
 
