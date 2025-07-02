@@ -6,10 +6,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
@@ -54,12 +51,6 @@ fun AppNavHost(
         )
     }
 
-    // Keep track of previous destination order
-    var prevOrder by remember {
-        mutableIntStateOf(
-            screenOrder[startDestination::class.qualifiedName] ?: 0
-        )
-    }
 
     NavHost(
         navController = navController,
@@ -68,7 +59,6 @@ fun AppNavHost(
         enterTransition = {
             val newOrder = screenOrder[initialState.destination.route] ?: 0
             val targetOrder = screenOrder[targetState.destination.route] ?: 0
-            prevOrder = targetOrder
 
             if (targetOrder > newOrder) {
                 slideInHorizontally(initialOffsetX = { it }, animationSpec = tween(300)) + fadeIn(
@@ -144,7 +134,7 @@ fun AppNavHost(
             val args = it.toRoute<Cards>()
             CardScreen(topicId = args.topicId)
         }
-        composable<Exam> {
+        composable<Exam> { it ->
             val args = it.toRoute<Exam>()
             ExamScreen(
                 subject = args.subject,
