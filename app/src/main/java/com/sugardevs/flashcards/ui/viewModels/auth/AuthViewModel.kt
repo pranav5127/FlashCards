@@ -22,8 +22,8 @@ class AuthViewModel @Inject constructor(
     private val authRepository: AuthRepository
 ) : ViewModel() {
 
-    var userDisplayName by mutableStateOf("Anonymous")
-        private set
+    private var _userDisplayName: MutableStateFlow<String> = MutableStateFlow("")
+        val userDisplayName: StateFlow<String> = _userDisplayName
 
     private val _avatarUrl = MutableStateFlow("")
     val avatarUrl: StateFlow<String> = _avatarUrl
@@ -136,7 +136,7 @@ class AuthViewModel @Inject constructor(
             password = ""
             confirmPassword = ""
             resetEmail = ""
-            userDisplayName = "Anonymous"
+            _userDisplayName.value = ""
             _avatarUrl.value = ""
             Log.d("AuthViewModel", "Logout complete")
             onLogOutComplete?.invoke()
@@ -156,11 +156,11 @@ class AuthViewModel @Inject constructor(
             _isLoggedIn.value = session != null
 
             session?.user?.let { user ->
-                userDisplayName = user.userMetadata?.get("full_name")?.toString() ?: "Anonymous"
+                _userDisplayName.value = user.userMetadata?.get("full_name")?.toString() ?: ""
                 val rawAvatar = user.userMetadata?.get("avatar_url")?.toString() ?: ""
                 _avatarUrl.value = rawAvatar.removeSurrounding("\"")
                 userName = user.email ?: ""
-                userDisplayName = userDisplayName.removeSurrounding("\"")
+                _userDisplayName.value = _userDisplayName.value.removeSurrounding("\"")
                 Log.d("AuthViewModel", " Avatar: $avatarUrl")
             }
 

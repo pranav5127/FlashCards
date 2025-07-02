@@ -137,7 +137,7 @@ fun AppNavHost(
         }
 
         composable<Home> {
-            HomeScreen(navController = navController, userName = authViewModel.userDisplayName)
+            HomeScreen(navController = navController, userName = authViewModel.userDisplayName.value)
         }
 
         composable<Cards> {
@@ -167,7 +167,7 @@ fun AppNavHost(
         }
         composable<Profile> {
             ProfileScreen(
-                userName = authViewModel.userDisplayName,
+                userName = authViewModel.userDisplayName.value,
                 email = authViewModel.userName,
                 onLogoutPressed = {
                     authViewModel.logout {

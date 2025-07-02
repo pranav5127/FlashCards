@@ -19,7 +19,7 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
 
-    private const val BASE_URL = "http://192.168.1.5:9999"
+    private const val BASE_URL = "https://flask-hello-world-1-uji3.onrender.com"
 
     @Provides
     @Singleton

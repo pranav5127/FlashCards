@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">FlashCards</string>
     <string name="back">Back</string>
-    <string name="flash_cards">Flash Cards</string>
+    <string name="flash_cards">Cards</string>
     <string name="home">Home</string>
     <string name="library">Library</string>
     <string name="settings">Settings\n</string>
@@ -13,7 +13,7 @@
     <string name="next_card">Next Card</string>
     <string name="previous_card">Previous Card</string>
     <string name="exam_screen">Exam Screen\n</string>
-    <string name="upload_pdf">Upload Pdf</string>
+    <string name="upload_pdf">Topics</string>
     <string name="send">Send</string>
     <string name="score">Score</string>
     <string name="log_out">Log out</string>
@@ -27,4 +27,5 @@
     <string name="email">email</string>
     <string name="sign_in_with_google">Sign In With Google</string>
     <string name="oops_something_went_wrong">Oops! Something went wrong.</string>
+    <string name="exam">Exam</string>
 </resources>

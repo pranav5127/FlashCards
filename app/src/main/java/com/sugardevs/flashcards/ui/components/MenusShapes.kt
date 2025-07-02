@@ -16,6 +16,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.sugardevs.flashcards.ui.model.Subject
@@ -28,8 +29,6 @@ fun FlashCardTopic(
     gradientStartColor: Color = Color(0xFF64B5F6),
     gradientEndColor: Color = Color(0xFF2196F3)
 ) {
-
-
     val isDarkGradient = (gradientStartColor.red + gradientStartColor.green + gradientStartColor.blue +
             gradientEndColor.red + gradientEndColor.green + gradientEndColor.blue) / 6 < 0.5f
     val textColor = if (isDarkGradient) Color.White else Color.Black
@@ -63,7 +62,8 @@ fun FlashCardTopic(
                 Text(
                     text = subject.topicId,
                     color = textColor,
-                    fontSize = 24.sp,
+                    fontSize = 18.sp,
+                    textAlign = TextAlign.Center
                 )
             }
         }

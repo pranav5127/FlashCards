@@ -8,13 +8,13 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sugardevs.flashcards.data.local.model.ExamEntity
 import com.sugardevs.flashcards.data.local.repository.ExamRepository
+import com.sugardevs.flashcards.ui.model.AnswerResult
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+
+
 
 @HiltViewModel
 class ExamScreenViewModel @Inject constructor(
@@ -45,6 +45,9 @@ class ExamScreenViewModel @Inject constructor(
     var finalScoreText by mutableStateOf("")
         private set
 
+    private val _answerResults = mutableStateOf<List<AnswerResult>>(emptyList())
+    val answerResults: List<AnswerResult> get() = _answerResults.value
+
     fun submitExam(selectedAnswers: Map<Int, String>, topicId: String) {
         showScore(selectedAnswers, topicId)
         val score = _scores.value[topicId] ?: 0
@@ -58,28 +61,27 @@ class ExamScreenViewModel @Inject constructor(
     }
 
     fun showScore(selectedAnswers: Map<Int, String>, topicId: String) {
-        Log.d("showScore", "Topic ID: $topicId")
-        Log.d("showScore", "Selected Answers: $selectedAnswers")
-
         val questionsForTopic = _questionsByTopic.value
         var correctCount = 0
+        val results = mutableListOf<AnswerResult>()
 
         questionsForTopic.forEach { question ->
             val selectedAnswer = selectedAnswers[question.questionId]
             val correctAnswer = question.answer
+            val isCorrect = selectedAnswer == correctAnswer
+            if (isCorrect) correctCount++
 
-            Log.d(
-                "showScore",
-                "QID: ${question.questionId}, selected: $selectedAnswer, correct: $correctAnswer"
+            results.add(
+                AnswerResult(
+                    question = question.question,
+                    selectedAnswer = selectedAnswer,
+                    correctAnswer = correctAnswer,
+                    isCorrect = isCorrect
+                )
             )
-
-            if (selectedAnswer != null && selectedAnswer == correctAnswer) {
-                correctCount++
-            }
         }
 
-        Log.d("showScore", "Score: $correctCount out of ${questionsForTopic.size}")
-
+        _answerResults.value = results
         _scores.value = _scores.value + (topicId to correctCount)
     }
 

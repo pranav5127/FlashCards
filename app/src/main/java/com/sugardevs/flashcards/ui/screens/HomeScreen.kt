@@ -53,7 +53,7 @@ fun HomeScreen(
             ) {
                 Text(
                     text = "Hi ${userName},",
-                    fontSize = 40.sp,
+                    fontSize = 30.sp,
                    color = MaterialTheme.colorScheme.onSurface
                 )
             }

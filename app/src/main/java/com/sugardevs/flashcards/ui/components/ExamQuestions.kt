@@ -3,12 +3,15 @@ package com.sugardevs.flashcards.ui.components
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ArrowCircleLeft
 import androidx.compose.material.icons.outlined.ArrowCircleRight
 import androidx.compose.material.icons.outlined.CheckCircleOutline
 import androidx.compose.material3.*
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -18,6 +21,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.sugardevs.flashcards.ui.model.AnswerResult
 import com.sugardevs.flashcards.ui.viewModels.ExamScreenViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -133,39 +137,22 @@ fun ExamQuestions(
             ) {
                 IconButton(
                     onClick = {
-                        if (currentQuestionIndex > 0) {
-                            currentQuestionIndex--
-                        }
+                        if (currentQuestionIndex > 0) currentQuestionIndex--
                     },
                     enabled = currentQuestionIndex > 0
                 ) {
-                    Icon(
-                        imageVector = Icons.Outlined.ArrowCircleLeft,
-                        contentDescription = "Previous",
-                        modifier = Modifier.size(64.dp)
-                    )
+                    Icon(Icons.Outlined.ArrowCircleLeft, contentDescription = "Previous", modifier = Modifier.size(64.dp))
                 }
 
                 if (currentQuestionIndex < questions.size - 1) {
-                    IconButton(onClick = {
-                        currentQuestionIndex++
-                    }) {
-                        Icon(
-                            imageVector = Icons.Outlined.ArrowCircleRight,
-                            contentDescription = "Next",
-                            modifier = Modifier.size(64.dp)
-                        )
+                    IconButton(onClick = { currentQuestionIndex++ }) {
+                        Icon(Icons.Outlined.ArrowCircleRight, contentDescription = "Next", modifier = Modifier.size(64.dp))
                     }
                 } else {
                     IconButton(onClick = {
                         viewModel.submitExam(selectedAnswers, examEntity.topicId)
                     }) {
-                        Icon(
-                            imageVector = Icons.Outlined.CheckCircleOutline,
-                            contentDescription = "Submit",
-                            modifier = Modifier.size(64.dp),
-                            tint = MaterialTheme.colorScheme.primary
-                        )
+                        Icon(Icons.Outlined.CheckCircleOutline, contentDescription = "Submit", modifier = Modifier.size(64.dp))
                     }
                 }
             }
@@ -178,7 +165,8 @@ fun ExamQuestions(
                 viewModel.dismissDialog()
                 onSubmitExam()
             },
-            dialogText = finalScoreText
+            dialogText = finalScoreText,
+            answerResults = viewModel.answerResults
         )
     }
 }
@@ -204,30 +192,50 @@ fun OptionItem(
         RadioButton(
             selected = isSelected,
             onClick = null,
-            colors = RadioButtonDefaults.colors(
-                selectedColor = MaterialTheme.colorScheme.primary
-            )
+            colors = RadioButtonDefaults.colors(selectedColor = MaterialTheme.colorScheme.primary)
         )
         Spacer(modifier = Modifier.width(12.dp))
-        Text(
-            text = optionText,
-            fontSize = 18.sp
-        )
+        Text(text = optionText, fontSize = 18.sp)
     }
 }
 
 @Composable
 fun ShowDialog(
     onConfirmation: () -> Unit,
-    dialogText: String
+    dialogText: String,
+    answerResults: List<AnswerResult>
 ) {
     AlertDialog(
-        onDismissRequest = { onConfirmation() },
-        title = { Text(text = "Exam Score") },
-        text = { Text(text = dialogText) },
+        onDismissRequest = onConfirmation,
         confirmButton = {
-            TextButton(onClick = { onConfirmation() }) {
+            TextButton(onClick = onConfirmation) {
                 Text("OK")
+            }
+        },
+        title = { Text("Exam Score") },
+        text = {
+            Column(modifier = Modifier.fillMaxHeight(0.6f)) {
+                Text(dialogText, fontWeight = FontWeight.Bold, modifier = Modifier.padding(bottom = 8.dp))
+
+                Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
+                    answerResults.forEachIndexed { index, result ->
+                        Column(modifier = Modifier.padding(vertical = 4.dp)) {
+                            Text("${index + 1}. ${result.question}", fontWeight = FontWeight.Medium)
+                            Text(
+                                "Your Answer: ${result.selectedAnswer ?: "None"}",
+                                color = if (result.isCorrect) Color(0xFF4CAF50) else Color(0xFFF44336)
+                            )
+                            if (!result.isCorrect) {
+                                Text("Correct Answer: ${result.correctAnswer}", color = Color(0xFF4CAF50))
+                            }
+                            HorizontalDivider(
+                                modifier = Modifier.padding(vertical = 4.dp),
+                                thickness = DividerDefaults.Thickness,
+                                color = DividerDefaults.color
+                            )
+                        }
+                    }
+                }
             }
         }
     )
