@@ -38,7 +38,7 @@ fun SplashScreen() {
             .fillMaxSize()
             .background(
                 Brush.verticalGradient(
-                    listOf(Color(0xFF2193b0), Color(0xFF6dd5ed)) // blue gradient
+                    listOf(Color(0xFF021234), Color(0xFF072E4E)) // blue gradient
                 )
             ),
         contentAlignment = Alignment.Center
@@ -47,7 +47,7 @@ fun SplashScreen() {
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Image(
-                painter = painterResource(id = R.drawable.card3d),
+                painter = painterResource(id = R.drawable.flashcards),
                 contentDescription = "App Logo",
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
