@@ -1,8 +1,8 @@
 <div style="display: flex; justify-content: center; gap: 10px;">
-  <img src="/home/pranav/StudioProjects/FlashCards/Media/1.jpeg" alt="Image 1" width="200"/>
-  <img src="/home/pranav/StudioProjects/FlashCards/Media/2.jpeg" alt="Image 2" width="200"/>
-  <img src="/home/pranav/StudioProjects/FlashCards/Media/3.jpeg" alt="Image 3" width="200"/>
-  <img src="/home/pranav/StudioProjects/FlashCards/Media/4.jpeg" alt="Image 3" width="200"/>
+  <img src="/Media/1.jpeg" alt="Image 1" width="200"/>
+  <img src="/Media/2.jpeg" alt="Image 2" width="200"/>
+  <img src="/Media/3.jpeg" alt="Image 3" width="200"/>
+  <img src="/Media/4.jpeg" alt="Image 3" width="200"/>
 </div>
 
 # 📚 FlashCards
